@@ -1,0 +1,50 @@
+# Fork only: checks every week for a new JetBrains release tag and opens an issue.
+# The merge itself runs locally with fork/upstream-sync.sh (see docs/upstream-sync.md).
+name: Fork - upstream release check
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: fork
+
+      - name: Find a newer upstream tag
+        id: tag
+        run: |
+          git remote add upstream https://github.com/JetBrains/intellij-community.git
+          echo "base=$(tr -d '[:space:]' < fork/UPSTREAM_BASE)" >> "$GITHUB_OUTPUT"
+          echo "tag=$(bash fork/upstream-sync.sh check)" >> "$GITHUB_OUTPUT"
+          {
+            echo 'status<<EOF'
+            bash fork/upstream-sync.sh status
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Open an issue
+        if: steps.tag.outputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          BASE: ${{ steps.tag.outputs.base }}
+          STATUS: ${{ steps.tag.outputs.status }}
+        run: |
+          title="Upstream sync: $TAG"
+          if gh issue list --repo "$GITHUB_REPOSITORY" --state all --search "in:title \"$title\"" --json number --jq '.[].number' | grep -q .; then
+            echo "An issue for $TAG already exists."
+            exit 0
+          fi
+          body=$(printf 'JetBrains published **%s**. The current base is **%s**.\n\n```\n%s\n```\n\nRun locally:\n\n```\nfork/upstream-sync.sh merge %s\n```\n\nProcess: docs/upstream-sync.md' "$TAG" "$BASE" "$STATUS" "$TAG")
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
