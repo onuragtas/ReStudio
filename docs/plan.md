@@ -79,14 +79,14 @@ Kod yazmadan önce mevcut parçaların kutudan ne verdiğini ölç; eksik listes
 
 - [ ] [JetBrains/intellij-community](https://github.com/JetBrains/intellij-community)'yi GitHub'da fork'la; upstream merge'leri için geçmişi tut (`--depth 1` değil, gerekirse `--filter=blob:none`)
 - [ ] Windows'ta klonlamadan önce `git config --global core.longpaths true`
-- [ ] Son kararlı sürüm tag'inden (ör. 2025.3.x) kendi `main` branch'ini aç; JetBrains'in `master`'ını takip etme
+- [ ] Son kararlı sürüm tag'inden kendi `main` branch'ini aç; JetBrains'in `master`'ını takip etme. Plan 2025.3.x yazıldığında yazıldı; bugün (Kasım 2026) 2026.x tag'leri var, en son kararlı olanı `git ls-remote --tags upstream 'idea/*'` ile seç
 - [ ] Kaynağı IntelliJ ile aç, JetBrains Runtime SDK'sını kur, "IDEA" run configuration'ı ile çalıştır
 - [ ] `./installers.cmd -Dintellij.build.target.os=current` ile kendi işletim sisteminde installer üret; build süresini, disk ve RAM kullanımını not et
 
 **Dil bileşenlerini dene**
 
 - [ ] Resmi IntelliJ IDEA üzerine [LSP4IJ](https://github.com/redhat-developer/lsp4ij) kur; hazır şablonları (Go, HTML, CSS, TypeScript vb.) ve [user-defined language server](https://www.github.com/redhat-developer/lsp4ij/blob/main/docs/UserDefinedLanguageServer.md) ayarını kullan (fork'u beklemeye gerek yok)
-- [ ] .NET: `dotnet tool install --global roslyn-language-server --prerelease` ([NuGet](https://www.nuget.org/packages/roslyn-language-server.linux-x64)); yedek olarak [csharp-ls](https://github.com/sofusa/csharp-language-server); debug için [netcoredbg](https://github.com/samsung/netcoredbg)
+- [ ] .NET: `dotnet tool install --global roslyn-language-server --prerelease` ([NuGet](https://www.nuget.org/packages/roslyn-language-server.linux-x64)); yedek olarak [csharp-ls](https://github.com/razzmatazz/csharp-language-server); debug için [netcoredbg](https://github.com/samsung/netcoredbg)
 - [ ] Go: `gopls` + `dlv dap`
 - [ ] Frontend: vtsls (veya typescript-language-server), vscode-langservers-extracted, Vue LS, Angular LS, ESLint; debug için vscode-js-debug
 - [ ] PHP: Phpactor + vscode-php-debug adaptörüyle Xdebug
@@ -170,10 +170,16 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] Bundled plugin listesi: dil plugin'leri, LSP4IJ, Flutter, Dart, Python; ihtiyaç olmayanlar (ör. Android) çıkarılsın
 - [ ] Güncelleme kontrolü GitHub Releases'a baksın (veya ilk sürümde kapatılsın)
 - [ ] GitHub Actions ile Windows/macOS/Linux installer build'i; standart runner yetmezse self-hosted runner
-- [ ] macOS imzalama ve notarization (yapılmazsa README'de Gatekeeper notu)
+  - Upstream'in `.github/workflows/ide_build_and_upload.yml`'ı bunu zaten yapıyor: `ubuntu-latest` üzerinde Docker ile build, `-aarch64.sit` üretimi, sonra `macos-latest` üzerinde `-aarch64.dmg`. Çıktılar imzasız.
+  - Fork'ta değişmeden çalışmaz: `.github/actions/build_ide`, `JetBrains/android`'i `github.ref` ile checkout ediyor; bizim branch ve tag'lerimiz orada yok. Ref, `fork/UPSTREAM_BASE`'deki upstream tag'ine sabitlenmeli.
+  - Upstream dosyalarına dokunmamak için ayrı bir `fork-release.yml` yaz: build adımlarını ondan çağır, `.dmg`'yi `gh release create` ile GitHub Releases'a yükle.
+  - Sadece Apple Silicon (aarch64) `.dmg` üretiliyor; Intel Mac gerekiyorsa x64 `.sit`/`.dmg` adımı eklenmeli.
+  - Upstream'in günlük `schedule` tetikleyicisi fork'ta gereksiz dakika harcar; fork'ta kapalı kalsın.
+- [ ] macOS imzalama ve notarization (yapılmazsa README'de Gatekeeper notu: `xattr -dr com.apple.quarantine`). İmza için Apple Developer ID sertifikası ve notarization bilgileri GitHub secret olarak eklenmeli.
 - [ ] `LICENSE` (Apache 2.0), `NOTICE` ve üçüncü taraf lisans listesi
 - [ ] Upstream senkron süreci: her JetBrains sürüm tag'ine bir merge; adımlar `docs/upstream-sync.md`'de
 - [ ] README: ne olduğu, JetBrains ile bağlantısı olmadığı, desteklenen diller, kurulum
+- [ ] Fork'un kökündeki `AGENTS.md`'yi fork'a göre sadeleştir: silinen `.agents/skills/` dosyalarına referanslar kalmasın, fork kuralları (JetBrains koduna dokunma, sadece marka/paketleme) eklensin
 
 **Bitti kriteri:** GitHub Releases'ta indirilebilir installer var; kurulunca kendi adıyla açılıyor, desteklenen diller hazır geliyor, resmi IntelliJ ile yan yana çalışıyor ve bir upstream merge'ü baştan sona yapılmış.
 
@@ -184,8 +190,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 ```
 <isim>-langs/                  # plugin reposu (Faz 1-5)
   settings.gradle.kts         # multi-module
-  CLAUDE.md                   # mimari kurallar, komutlar, aktif faz
-  docs/plan.md                # bu planın kopyası, tik atılan görevler
+  CLAUDE.md                   # mimari kurallar, komutlar, aktif faz; plana link
   core/                       # SDK bulucu, server yöneticisi, ortak DAP ve test adaptörleri
   dotnet/                     # Roslyn LS, solution modeli, netcoredbg, NuGet
   go/                         # gopls, go.mod modeli, Delve, go test
@@ -193,8 +198,9 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   php/                        # Phpactor, composer modeli, Xdebug, PHPUnit/Pest
   testdata/                   # her dil için Faz 0'da seçilen örnek proje
 
-<isim>-ide/                    # intellij-community fork'u (Faz 6-7)
+<isim>-ide/                    # intellij-community fork'u = bu repo (ReStudio) (Faz 6-7)
   CLAUDE.md                   # fork kuralları: JetBrains kodu değiştirilmez, sadece marka/paketleme
+  docs/plan.md                # bu plan; tek kopya burada, tik atılan görevler
   docs/upstream-sync.md       # upstream merge adımları
   .github/workflows/          # installer build'leri, release
   ... (intellij-community'nin kendisi; değişiklikler ürün tanımı, marka dosyaları ve bundled plugin listesiyle sınırlı)
@@ -208,7 +214,7 @@ Her dil modülü ayrı bir plugin `.zip`'i üretir ve `core`'a bağımlıdır; b
 | --- | --- |
 | Dil | Kotlin, JDK 21 |
 | Build | Gradle + IntelliJ Platform Gradle Plugin 2.x |
-| Hedef IDE | Plugin: IntelliJ Platform 2025.3+ · Fork: 2025.3.x tag'inden başlayan kendi branch'in |
+| Hedef IDE | Plugin: fork'un baz aldığı platform sürümü ve üstü · Fork: Faz 0'da seçilen son kararlı tag'den (2026.x) başlayan kendi branch'in |
 | LSP/DAP istemcisi | LSP4IJ (bundled plugin) |
 | Language server'lar | Roslyn LS, gopls, vtsls, vscode-langservers-extracted, Vue LS, Angular LS, Tailwind LS, ESLint LS, Phpactor |
 | Debug adapter'lar | netcoredbg, Delve (`dlv dap`), vscode-js-debug, vscode-php-debug |
@@ -220,7 +226,7 @@ Her dil modülü ayrı bir plugin `.zip`'i üretir ve `core`'a bağımlıdır; b
 - Her görev = tek oturum, tek PR. Önce test (fixture veya testdata solution), sonra implementasyon.
 - Platform API'lerinde Claude'un bildiği eski API'leri kullanma riski var: deprecated uyarılarını build'de hata say, `runIde` ile her görevin sonunda elle dene.
 - Language server ve debug adapter davranışını tahmin ettirme; LSP/DAP trafiğini loglayıp (LSP4IJ trace: verbose) gerçek mesajları Claude'a ver.
-- Faz sonunda `docs/plan.md`'deki görevleri işaretle, bitti kriterini elle doğrula.
+- Faz sonunda fork reposundaki `docs/plan.md`'de görevleri işaretle, bitti kriterini elle doğrula. Plugin reposunda planın kopyası tutulmaz.
 
 Fork reposunda Claude'a verilecek ana kural: JetBrains'in kaynak dosyalarına dokunma, değişiklikleri marka ve paketleme dosyalarında tut. Her dokunulan upstream dosyası bir sonraki merge'de çakışma demek.
 
@@ -250,12 +256,13 @@ En büyük risk kapsam: dört dil paketi ve bir fork'un sürekli bakımı tek ki
 - [ ] Dart plugin'inin ve intellij-community'deki Python plugin'inin fork'a bundled eklenmesinin lisans ve build açısından doğrulanması
 - [ ] Fork'tan JetBrains Marketplace'e erişim açık kalacak mı? Kullanım koşulları kontrol edilmeli.
 - [ ] Bir plugin `.zip`'ini fork'un installer build'ine bundled eklemenin doğru yolu; Faz 6 başında intellij-community build script'lerinden doğrulanacak.
+- [ ] Fork reposunda `.agents/skills/` silindi. Bu silme kasıtlı mı? Upstream merge'lerinde bu dosyalar tekrar gelir; her merge'de silmek mi, yoksa tutmak mı daha az çakışma yaratır?
 
 ## Kaynaklar
 
 - [LSP4IJ](https://github.com/redhat-developer/lsp4ij) ve [geliştirici rehberi](https://www.github.com/redhat-developer/lsp4ij/blob/main/docs/DeveloperGuide.md)
 - [roslyn-language-server (NuGet)](https://www.nuget.org/packages/roslyn-language-server.linux-x64)
-- [csharp-language-server](https://github.com/sofusa/csharp-language-server)
+- [csharp-language-server](https://github.com/razzmatazz/csharp-language-server)
 - [netcoredbg](https://github.com/samsung/netcoredbg)
 - [The Rough History of .NET Core Debuggers](https://docs.lextudio.com/blog/the-rough-history-of-net-core-debuggers-b9fb206dc4aa)
 
