@@ -113,7 +113,7 @@ TypeScript 7 Go ile yeniden yazılmış sürüm ve `tsserver.js` içermez. Vite'
 - [x] Her dil için bir örnek proje seç: ASP.NET Core solution (5-10 proje), çok paketli Go servisi, Laravel uygulaması, React (Vite) ve Vue uygulaması, Flutter uygulaması
   - `~/projects/ReStudio-langs/testdata/` (yerel repo, push edilmedi). Hepsi şablondan üretildi ve build/test'leri geçiyor: `dotnet/` (7 proje, `Shop.sln`), `go/` (`go.work`, 2 modül), `php/` (Laravel), `web/react/` (TS 7), `web/vue/` (TS 6, ESLint eklendi), `flutter/`. Angular örneği yok.
 - [ ] Boşluk analizi: dil × özellik (completion, navigation, diagnostics, run, debug, test) için "çalışıyor / kısmen / yok" tablosu
-  - Language server katmanı ölçüldü (aşağıda). Run, debug ve test henüz denenmedi. LSP4IJ ile IDE içinde deneme de yapılmadı.
+  - Language server ve debug katmanları ölçüldü (aşağıda). Run ve test henüz denenmedi. LSP4IJ ile IDE içinde deneme de yapılmadı.
 
 **Boşluk analizi: language server katmanı** (8 Kasım 2026)
 
@@ -145,7 +145,29 @@ Bulgular ve sonraki fazlara etkisi:
 - **ESLint (Faz 4):** typescript-eslint, TS 7'yi desteklemiyor (peer: `>=4.8.4 <6.1.0`). Vite'ın React şablonu ESLint yerine oxlint getiriyor. oxlint desteği değerlendirilmeli.
 - **Formatting:** Server'lar istemcinin gönderdiği girinti ayarını kullanıyor. Ayar `.editorconfig` veya Prettier'dan gelmeli; aksi hâlde formatlama tüm dosyayı değiştiriyor.
 - **PHP (Faz 5):** Phpactor rename, `vendor/` altındaki Laravel dosyalarını düzenliyor; plugin `vendor/`'a düşen düzenlemeleri engellemeli. Formatting yok (php-cs-fixer entegrasyonu gerekli). `view()` helper'ı için "Function not found" yanlış alarmı veriyor; Composer `autoload.files` indekslenmiyor olabilir.
-- **Kapsam dışı kalanlar:** Tailwind LS (örnek projede Tailwind yok), Angular LS (Angular örneği yok). Debug adapter'lar (netcoredbg, Delve, js-debug, php-debug) ve test runner'lar henüz denenmedi.
+- **Kapsam dışı kalanlar:** Tailwind LS (örnek projede Tailwind yok), Angular LS (Angular örneği yok). Test runner'lar henüz denenmedi.
+
+**Boşluk analizi: debug katmanı** (8 Kasım 2026)
+
+Ölçüm aracı: `ReStudio-langs/tools/dap-probe/` (başsız bir DAP istemcisi, stdio ve TCP). Her adapter örnek kodu başlattı, breakpoint'te durdu, değişkeni okudu, evaluate etti, bir step over yaptı ve programı sonuna kadar çalıştırdı.
+
+| Adapter (örnek) | Breakpoint | Değişken | Evaluate | Step over | Bitiş | Not |
+| --- | --- | --- | --- | --- | --- | --- |
+| Delve `dlv dap` (Go testi) | ✅ | ✅ `name` | ✅ | ✅ 8→9 | ✅ | `mode: test` |
+| netcoredbg 3.2.0 (.NET konsol) | ✅ | ✅ `rate` | ✅ | ✅ 11→12 | ✅ | Gerçek `dotnet` host'u gerekli |
+| netcoredbg, `async` metot | ✅ | ✅ `rate` | ✅ | ✅ `await` 17→18 | ✅ | Step başka thread'de bitiyor |
+| vscode-js-debug 1.140.0 (Node) | ✅ | ✅ `prices` | ✅ | ✅ 3→4 | ✅ | Alt oturum (`startDebugging`) |
+| vscode-php-debug 1.40.2 + Xdebug 3.5.3 | ✅ | ✅ `$prices` | ✅ | ✅ 10→11 | ✅ | Xdebug argümanları gerekli |
+| Dart `flutter debug-adapter --test` | ✅ | ✅ `tester` | ✅ | ✅ `await` satırında iki durak | ✅ | Önce entry'de duruyor |
+
+Bulgular ve sonraki fazlara etkisi:
+
+- **macOS geliştirici modu (tüm fazlar):** Delve ve netcoredbg `task_for_pid` izni ister. Geliştirici modu kapalıyken macOS bir şifre penceresi açar ve debug sessizce takılır. IDE bu durumu algılamalı ve kullanıcıya `sudo DevToolsSecurity -enable` önermeli.
+- **.NET (Faz 2):** Homebrew'un `dotnet`'i bir bash betiği. netcoredbg bu betiği başlatınca `configurationDone` 0x80004005 ile düşüyor. SDK bulucu gerçek host'u (`libexec/dotnet`) ve `DOTNET_ROOT`'u vermeli. Breakpoint'ler önce doğrulanmamış (`verified: false`) gelir ve modül yüklenince doğrulanır. `await` sonrası step başka bir thread'de durur; IDE `stopped` olayındaki thread'i seçmeli.
+- **Frontend (Faz 4):** js-debug asıl hedefi bir alt oturumda açar (`startDebugging` isteği, aynı TCP sunucusuna yeni bağlantı). LSP4IJ DAP istemcisinin bu isteği desteklediği doğrulanmalı; yoksa Node debug hiç durmaz.
+- **PHP (Faz 5):** php-debug, PHP'yi Xdebug ayarı olmadan başlatıyor. Run configuration `-dxdebug.mode=debug -dxdebug.start_with_request=yes -dxdebug.client_port=<port>` argümanlarını eklemeli.
+- **Flutter (Faz 6):** Dart adapter önce `entry` sebebiyle durur ve kendi kendine devam eder. `await` satırında step over aynı satırda ikinci kez durur; bu Dart VM davranışı, hata değil.
+- **Test aracı dersi:** Bir `stopped` olayı tek bir bekleyene verilmeli. Aksi hâlde istemci eski olayı tekrar okur ve program çalışırken `stackTrace` ister.
 
 **Bitti kriteri:** Fork kendi makinende derlenip installer üretiyor, hangi language server'ın kullanılacağı seçilmiş, boşluk tablosu hazır, sonraki fazların kapsamı bu tabloya göre güncellenmiş.
 
