@@ -278,6 +278,10 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] PHPUnit/Pest: JUnit XML çıktısıyla test penceresi
 - [ ] Xdebug: vscode-php-debug adaptörüyle debug
 
+- İlk dilim (8 Kasım 2026): `php` plugin'i. Phpactor, PHPUnit testleri ve script'ler için ▶, script Run/Debug, PHPUnit Run (`--teamcity` ile test ağacı, `php_qn` locator) ve Debug (Xdebug). Beşi de fork IDE'sinde elle denendi.
+  - `--teamcity` ad tabanlı mesaj yazıyor; test konsolu ad tabanlı modda çalışıyor.
+  - Açık: `artisan` ve built-in server configuration'ları, Pest, `vendor/`'a düşen rename düzenlemelerini engelleme, php-cs-fixer ile formatting.
+
 **Bitti kriteri:** Laravel projesinde completion, navigation, testler ve Xdebug breakpoint'leri çalışıyor.
 
 ### Faz 6: Flutter, Dart ve Python paketleme (1 hafta)
