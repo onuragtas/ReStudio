@@ -1,0 +1,175 @@
+# Fork only: builds the IDE installers and publishes them as a GitHub release.
+#
+# It does not call ide_build_and_upload.yml. That workflow uses .github/actions/build_ide, which checks out
+# JetBrains/android at github.ref. The fork branch and the release tags do not exist in JetBrains/android, so the
+# checkout fails. This workflow checks out JetBrains/android at the upstream base tag in fork/UPSTREAM_BASE.
+#
+# Start it with a tag push (restudio/v0.1.0) or by hand. A run by hand without a tag builds the installers only.
+name: Fork - release
+
+on:
+  push:
+    tags:
+      - 'restudio/v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag, for example restudio/v0.1.0. Leave it empty to build without a release.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fork-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  ARTIFACTS_DIR: out/idea-ce/artifacts
+
+jobs:
+  distributions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Free disk space
+        shell: bash
+        # The same cleanup as .github/actions/build_ide. The build runs inside Docker.
+        run: |
+          df -h /
+          sudo rm -rf /usr/share/dotnet /usr/share/swift /usr/share/miniconda /usr/local/lib/android \
+            /usr/local/share/boost /usr/local/share/powershell /usr/local/share/chromium /usr/local/lib/node_modules \
+            /opt/ghc /opt/hostedtoolcache/CodeQL /opt/hostedtoolcache/Ruby /opt/hostedtoolcache/PyPy \
+            /opt/hostedtoolcache/Python /opt/hostedtoolcache/go /opt/hostedtoolcache/node /opt/microsoft /opt/google \
+            /imagegeneration /var/cache/apt/archives
+          sudo apt-get -y clean
+          docker image prune --all --force || true
+          docker builder prune --all --force || true
+          df -h /
+
+      - name: Expand swap
+        shell: bash
+        # The build can run out of memory with the default 4 GB swap.
+        run: |
+          sudo swapoff -a || true
+          sudo rm -f /mnt/swapfile /swapfile
+          sudo fallocate -l 30G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
+
+      - name: Read the upstream base
+        id: base
+        shell: bash
+        run: echo "tag=$(tr -d '[:space:]' < fork/UPSTREAM_BASE)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout JetBrains/android at the upstream base
+        uses: actions/checkout@v6.0.2
+        with:
+          repository: JetBrains/android
+          path: android
+          ref: refs/tags/${{ steps.base.outputs.tag }}
+
+      - name: Build environment
+        shell: bash
+        run: docker build . --target intellij_idea --tag intellij_idea
+
+      - name: Build
+        shell: bash
+        run: docker run --rm --user "$(id -u)" --volume "${PWD}:/community" intellij_idea
+
+      - name: Upload Linux
+        uses: ./.github/actions/upload_ide
+        with:
+          os: linux
+          suffix: .tar.gz
+          artifacts_dir: ${{ env.ARTIFACTS_DIR }}
+
+      - name: Upload Windows
+        uses: ./.github/actions/upload_ide
+        with:
+          os: windows
+          suffix: .exe
+          artifacts_dir: ${{ env.ARTIFACTS_DIR }}
+
+      - name: Upload macOS aarch64 archive
+        uses: ./.github/actions/upload_ide
+        with:
+          os: mac
+          suffix: -aarch64.sit
+          artifacts_dir: ${{ env.ARTIFACTS_DIR }}
+
+      - name: Upload the .dmg build scripts
+        uses: actions/upload-artifact@v6.0.0
+        with:
+          name: dmg-build-scripts
+          if-no-files-found: error
+          retention-days: 1
+          path: ${{ env.ARTIFACTS_DIR }}/macos-dmg-build/
+
+  dmg:
+    runs-on: macos-latest
+    needs: distributions
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Download the .dmg build scripts
+        uses: actions/download-artifact@v7.0.0
+        with:
+          name: dmg-build-scripts
+
+      - name: Download the aarch64 archive
+        uses: actions/download-artifact@v7.0.0
+        with:
+          name: mac-aarch64.sit-unsigned
+
+      - name: Build the aarch64 .dmg
+        shell: bash
+        run: /bin/bash ./build.sh
+
+      - name: Upload the .dmg
+        uses: ./.github/actions/upload_ide
+        with:
+          os: mac
+          suffix: -aarch64.dmg
+          artifacts_dir: .
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [distributions, dmg]
+    if: github.event_name == 'push' || inputs.tag != ''
+    steps:
+      - name: Download the installers
+        uses: actions/download-artifact@v7.0.0
+        with:
+          pattern: '*-unsigned'
+          path: dist
+          merge-multiple: true
+
+      - name: Publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+        run: |
+          ls -l dist
+          notes=$(cat <<'EOF'
+          Unsigned preview build of ReStudio.
+
+          macOS: the app is not signed or notarized. Gatekeeper blocks it at the first start. Remove the quarantine flag once:
+
+              xattr -dr com.apple.quarantine "/Applications/IntelliJ IDEA OSS.app"
+
+          Each installer has a .sha256 file next to it.
+          EOF
+          )
+          gh release create "$TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "ReStudio ${TAG#restudio/}" \
+            --notes "$notes" \
+            --prerelease
