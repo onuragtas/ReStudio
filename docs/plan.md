@@ -237,8 +237,11 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] `dotnet build`/`run` run configuration'ı, `launchSettings.json`, tıklanabilir build hataları
 - [ ] netcoredbg ile debug ve attach
   - İlk dilim (8 Kasım 2026): `dotnet` plugin'i. Roslyn LS `solution/open` ile yükleniyor. `Main` ve top-level statements için ▶ var. Run `dotnet run`, Debug ise `dotnet build` ve netcoredbg ile çalışıyor. Debug fork IDE'sinde elle denendi ve breakpoint'te duruyor.
-  - Test debug'ı ve attach yazıldı (8 Kasım 2026). Test debug'ı `dotnet test`'i `VSTEST_HOST_DEBUG=1` ile başlatıyor, sonra netcoredbg bekleyen testhost'a bağlanıyor. "Attach to Process" listesi .NET süreçleri için netcoredbg sunuyor. İkisi de testli. IDE'de elle denenmedi.
+  - Test debug'ı ve attach yazıldı (8 Kasım 2026). Test debug'ı `dotnet test`'i `VSTEST_HOST_DEBUG=1` ile başlatıyor, sonra netcoredbg bekleyen testhost'a bağlanıyor. "Attach to Process" listesi .NET süreçleri için netcoredbg sunuyor. Test debug'ı fork IDE'sinde elle denendi ve breakpoint'te duruyor.
   - LSP4IJ'de "adapter'ı başlat, sonra attach et" modu yok: ATTACH modu süreç başlatmıyor. Descriptor LSP4IJ'ye LAUNCH, DAP istemcisine ATTACH veriyor.
+  - Platform, debug state'ini before-run adımlarından önce istiyor (`AsyncProgramRunner.execute`) ve her adıma environment'ın bir kopyasını veriyor. Before-run adımında oluşan bir değer, `executionId` ile ve oturum başlarken alınmalı.
+  - Platform `*.cs` dosyalarını kendi yerleşik "C#" custom file type'ına bağlıyor (`defaultFileTypes.xml`, dil `TEXT`). C# için gutter provider'ı `TEXT` dili için de kayıtlı. Faz 7'de fork bu eşlemeyi kaldırıp C#'ı TextMate'e verebilir.
+  - Roslyn code lens komutları (`dotnet.test.run`, `roslyn.client.peekReferences`) IDE aksiyonu olarak karşılanıyor. Başlıkları sistem dilinde geliyor.
 - [ ] `dotnet test` + TRX ile xUnit/NUnit/MSTest test penceresi, test gutter ikonları
   - İlk dilim: xUnit, NUnit ve MSTest metotlarında ▶ var. Teste çift tıklayınca koda gidiliyor.
   - Test ağacı konsol logger'ının sonuç satırlarından doluyor (`console;verbosity=normal`). VSTest bu satırları çalışma boyunca toplu yazıyor. TRX yedek: konsolda sonuç satırı yoksa ağacı o dolduruyor.
