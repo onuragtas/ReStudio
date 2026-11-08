@@ -81,6 +81,7 @@ Kod yazmadan önce mevcut parçaların kutudan ne verdiğini ölç; eksik listes
 - [ ] Windows'ta klonlamadan önce `git config --global core.longpaths true` (sadece Windows'ta build alınırsa)
 - [x] Son kararlı sürüm tag'inden kendi `main` branch'ini aç; JetBrains'in `master`'ını takip etme. `main`, `idea/263.7307.200` üzerinde. Bu tag `idea/2026.3` ile aynı commit; base `fork/UPSTREAM_BASE`'de yazar.
 - [ ] Kaynağı IntelliJ ile aç, JetBrains Runtime SDK'sını kur, "IDEA" run configuration'ı ile çalıştır
+  - Ertelendi. Bu iş sadece fork'un kaynağında çalışırken gerekli (Faz 6-7). Dil işleri plugin reposunda yapılıyor ve installer build'i (yukarıda) fork'un derlendiğini zaten kanıtlıyor.
 - [x] `./installers.cmd -Dintellij.build.target.os=current` ile kendi işletim sisteminde installer üret; build süresini, disk ve RAM kullanımını not et
   - Ölçüm (8 Kasım 2026, M1 Pro, 10 çekirdek, 32 GB RAM, soğuk cache): toplam 37,5 dk. Bazel derlemesi 12,5 dk (6.535 action), paketleme ve `.dmg` 25 dk.
   - En yüksek RAM: yaklaşık 10 GB (Bazel + Java worker'lar). Disk: yaklaşık 28 GB (`out/` 14 GB, Bazel cache 11 GB, `build/download` 2 GB, `android/` 0,9 GB).
@@ -109,9 +110,12 @@ TypeScript 7 Go ile yeniden yazılmış sürüm ve `tsserver.js` içermez. Vite'
 - [ ] Go: `gopls` + `dlv dap`
 - [ ] Frontend: vtsls (veya typescript-language-server), vscode-langservers-extracted, Vue LS, Angular LS, ESLint; debug için vscode-js-debug
 - [ ] PHP: Phpactor + vscode-php-debug adaptörüyle Xdebug
-- [ ] Flutter: fork build'inde Flutter ve Dart plugin'lerinin kurulup çalıştığını doğrula
-- [x] Her dil için bir örnek proje seç: ASP.NET Core solution (5-10 proje), çok paketli Go servisi, Laravel uygulaması, React (Vite) ve Vue uygulaması, Flutter uygulaması
-  - `~/projects/ReStudio-langs/testdata/` (yerel repo, push edilmedi). Hepsi şablondan üretildi ve build/test'leri geçiyor: `dotnet/` (7 proje, `Shop.sln`), `go/` (`go.work`, 2 modül), `php/` (Laravel), `web/react/` (TS 7), `web/vue/` (TS 6, ESLint eklendi), `flutter/`. Angular örneği yok.
+- [x] Flutter: fork build'inde Flutter ve Dart plugin'lerinin kurulup çalıştığını doğrula
+  - Marketplace bu build için Dart 511.0.0 ve Flutter 98.0.0 veriyor. İkisi de hatasız yükleniyor. Dart SDK 3.13.7 bulunuyor ve analysis server çalışıyor.
+  - Dart plugin'i platformun yerleşik LSP API'sini (`com.intellij.platform.lsp`) kullanıyor. Bu API açık kaynak build'de var. Faz 1'de LSP4IJ'ye alternatif olarak değerlendirilmeli.
+  - macOS masaüstü debug'ı tam Xcode ve CocoaPods ister. Sadece Command Line Tools varken `flutter run` "[1/1] MacOS SDK" satırında hata vermeden takılıyor. IDE bu durumu algılayıp mesaj göstermeli (Faz 6). Chrome (web) cihazı Xcode'suz çalışır.
+- [x] Her dil için bir örnek proje seç: ASP.NET Core solution (5-10 proje), çok paketli Go servisi, Laravel uygulaması, React (Vite) ve Vue uygulaması, Angular ve Tailwind uygulaması, Flutter uygulaması
+  - `~/projects/ReStudio-langs/testdata/` (yerel repo, push edilmedi). Hepsi şablondan üretildi ve build/test'leri geçiyor: `dotnet/` (7 proje, `Shop.sln`), `go/` (`go.work`, 2 modül), `php/` (Laravel), `web/react/` (TS 7), `web/vue/` (TS 6, ESLint ve Vitest eklendi), `web/angular/` (Angular 22, TS 6), `web/tailwind/` (Tailwind 4, Vite), `flutter/`.
 - [ ] Boşluk analizi: dil × özellik (completion, navigation, diagnostics, run, debug, test) için "çalışıyor / kısmen / yok" tablosu
   - Language server, debug ve test runner katmanları ölçüldü (aşağıda). LSP4IJ'nin IDE içinde denemesi sürüyor: fork build'i `~/.restudio-dev/ide/` altında, LSP4IJ 0.21.0 ile açıldı.
 
@@ -135,6 +139,8 @@ TypeScript 7 Go ile yeniden yazılmış sürüm ve `tsserver.js` içermez. Vite'
 | ESLint LS (Vue, `.ts`) | — | — | — | — | — | — | ✅ pull | 3 sn |
 | Phpactor (Laravel) | ✅ `vendor/`'a | ✅ | ✅ | ✅ | ⚠️ `vendor/`'u değiştiriyor | ❌ | ⚠️ yanlış alarm | 26 sn |
 | Dart analysis server (Flutter) | ✅ Flutter SDK'ya | ✅ | ✅ | ✅ | ✅ SDK sembolünü reddediyor | ✅ | ✅ | 6 sn |
+| Angular LS 22 (template `.html`) | ✅ component'e | ✅ | ✅ | ✅ HTML + TS | ✅ HTML + TS | ❌ | ? dosya temiz, ölçülmedi | 2 sn |
+| Tailwind LS 0.16 (`.html`) | — | ✅ class | ✅ 23.632 class | — | — | — | ? dosya temiz, ölçülmedi | 8 sn |
 
 Bulgular ve sonraki fazlara etkisi:
 
@@ -145,7 +151,8 @@ Bulgular ve sonraki fazlara etkisi:
 - **ESLint (Faz 4):** typescript-eslint, TS 7'yi desteklemiyor (peer: `>=4.8.4 <6.1.0`). Vite'ın React şablonu ESLint yerine oxlint getiriyor. oxlint desteği değerlendirilmeli.
 - **Formatting:** Server'lar istemcinin gönderdiği girinti ayarını kullanıyor. Ayar `.editorconfig` veya Prettier'dan gelmeli; aksi hâlde formatlama tüm dosyayı değiştiriyor.
 - **PHP (Faz 5):** Phpactor rename, `vendor/` altındaki Laravel dosyalarını düzenliyor; plugin `vendor/`'a düşen düzenlemeleri engellemeli. Formatting yok (php-cs-fixer entegrasyonu gerekli). `view()` helper'ı için "Function not found" yanlış alarmı veriyor; Composer `autoload.files` indekslenmiyor olabilir.
-- **Kapsam dışı kalanlar:** Tailwind LS (örnek projede Tailwind yok), Angular LS (Angular örneği yok).
+- **Angular (Faz 4):** `ngserver`, `@angular/language-service` paketini `--ngProbeLocations` dizinlerinde arar. Bu paket LS'in kendi kurulumunda durur. Parametreye hem LS'in `node_modules`'u hem projenin `node_modules`'u verilmeli. Aksi hâlde server açılışta düşer. Formatting yok; Prettier gerekli.
+- **Tailwind (Faz 4):** v4'te config dosyası yok. LS, `@import "tailwindcss"` içeren CSS'i kendisi buluyor. Completion listesi çok büyük (23 bin öğe); istemci listeyi filtreleyip sınırlamalı.
 
 **Boşluk analizi: debug katmanı** (8 Kasım 2026)
 
@@ -349,7 +356,9 @@ En büyük risk kapsam: dört dil paketi ve bir fork'un sürekli bakımı tek ki
 - [ ] IDE'nin adı ne olacak? (JetBrains markalarına benzemeyen, GitHub'da ve domain olarak boş bir isim)
 - [ ] Hangi işletim sistemleri için installer çıkacak? İlk sürüm tek platformla sınırlanabilir.
 - [ ] Dil sırası doğru mu? (Öneri: .NET → Go → frontend → PHP)
-- [ ] Roslyn LS mi csharp-ls mi; vtsls mi typescript-language-server mı? Faz 0 sonunda karar verilecek.
+- [ ] Roslyn LS mi csharp-ls mi; vtsls mi typescript-language-server mı? Faz 0 ölçümüne göre öneri (onay bekliyor):
+  - **C#:** Varsayılan Roslyn LS (Microsoft'un resmi server'ı, `solution/open` ile 12 sn'de tam çalışıyor). csharp-ls yedek kalsın: aynı özellikleri özel mesaj gerektirmeden veriyor, ama tek kişilik bir proje.
+  - **TypeScript:** vtsls. typescript-language-server TS 7 projelerinde başlamıyor; plandan çıkar. TS 7 projelerinde projenin kendi `tsc --lsp` server'ı kullanılsın.
 - [ ] Language server'lar installer'a gömülecek mi, ilk kullanımda mı indirilecek? (lisans, installer boyutu, Node.js bağımlılığı)
 - [ ] Dart plugin'inin ve intellij-community'deki Python plugin'inin fork'a bundled eklenmesinin lisans ve build açısından doğrulanması
 - [ ] Fork'tan JetBrains Marketplace'e erişim açık kalacak mı? Kullanım koşulları kontrol edilmeli.
