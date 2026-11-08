@@ -113,7 +113,7 @@ TypeScript 7 Go ile yeniden yazılmış sürüm ve `tsserver.js` içermez. Vite'
 - [x] Her dil için bir örnek proje seç: ASP.NET Core solution (5-10 proje), çok paketli Go servisi, Laravel uygulaması, React (Vite) ve Vue uygulaması, Flutter uygulaması
   - `~/projects/ReStudio-langs/testdata/` (yerel repo, push edilmedi). Hepsi şablondan üretildi ve build/test'leri geçiyor: `dotnet/` (7 proje, `Shop.sln`), `go/` (`go.work`, 2 modül), `php/` (Laravel), `web/react/` (TS 7), `web/vue/` (TS 6, ESLint eklendi), `flutter/`. Angular örneği yok.
 - [ ] Boşluk analizi: dil × özellik (completion, navigation, diagnostics, run, debug, test) için "çalışıyor / kısmen / yok" tablosu
-  - Language server ve debug katmanları ölçüldü (aşağıda). Run ve test henüz denenmedi. LSP4IJ ile IDE içinde deneme de yapılmadı.
+  - Language server, debug ve test runner katmanları ölçüldü (aşağıda). LSP4IJ'nin IDE içinde denemesi sürüyor: fork build'i `~/.restudio-dev/ide/` altında, LSP4IJ 0.21.0 ile açıldı.
 
 **Boşluk analizi: language server katmanı** (8 Kasım 2026)
 
@@ -145,7 +145,7 @@ Bulgular ve sonraki fazlara etkisi:
 - **ESLint (Faz 4):** typescript-eslint, TS 7'yi desteklemiyor (peer: `>=4.8.4 <6.1.0`). Vite'ın React şablonu ESLint yerine oxlint getiriyor. oxlint desteği değerlendirilmeli.
 - **Formatting:** Server'lar istemcinin gönderdiği girinti ayarını kullanıyor. Ayar `.editorconfig` veya Prettier'dan gelmeli; aksi hâlde formatlama tüm dosyayı değiştiriyor.
 - **PHP (Faz 5):** Phpactor rename, `vendor/` altındaki Laravel dosyalarını düzenliyor; plugin `vendor/`'a düşen düzenlemeleri engellemeli. Formatting yok (php-cs-fixer entegrasyonu gerekli). `view()` helper'ı için "Function not found" yanlış alarmı veriyor; Composer `autoload.files` indekslenmiyor olabilir.
-- **Kapsam dışı kalanlar:** Tailwind LS (örnek projede Tailwind yok), Angular LS (Angular örneği yok). Test runner'lar henüz denenmedi.
+- **Kapsam dışı kalanlar:** Tailwind LS (örnek projede Tailwind yok), Angular LS (Angular örneği yok).
 
 **Boşluk analizi: debug katmanı** (8 Kasım 2026)
 
@@ -168,6 +168,26 @@ Bulgular ve sonraki fazlara etkisi:
 - **PHP (Faz 5):** php-debug, PHP'yi Xdebug ayarı olmadan başlatıyor. Run configuration `-dxdebug.mode=debug -dxdebug.start_with_request=yes -dxdebug.client_port=<port>` argümanlarını eklemeli.
 - **Flutter (Faz 6):** Dart adapter önce `entry` sebebiyle durur ve kendi kendine devam eder. `await` satırında step over aynı satırda ikinci kez durur; bu Dart VM davranışı, hata değil.
 - **Test aracı dersi:** Bir `stopped` olayı tek bir bekleyene verilmeli. Aksi hâlde istemci eski olayı tekrar okur ve program çalışırken `stackTrace` ister.
+
+**Boşluk analizi: test runner katmanı** (8 Kasım 2026)
+
+Ölçüm aracı: `ReStudio-langs/tools/test-probe/run-all.sh`. Her runner üç kez çalıştı: tüm testler, isimle tek test ve geçici olarak eklenen bozuk bir test. IDE'nin test ağacı makine okunur çıktıya ihtiyaç duyar.
+
+| Runner (örnek) | Makine okunur çıktı | Tüm testler | Tek test | Hata konumu | Süre |
+| --- | --- | --- | --- | --- | --- |
+| `go test -json` (`go.work`, 2 modül) | ✅ JSON satırları | ✅ 2 paket | ✅ `-run '^TestX$'` | ⚠️ sadece çıktı metninde (`file.go:6`) | 2 sn |
+| `dotnet test` + xUnit (2 test projesi) | ✅ TRX dosyası | ✅ | ✅ `--filter FullyQualifiedName=` | ✅ stack'te `file.cs:line 8` | 4 sn |
+| Vitest 5 (Vue) | ✅ JSON dosyası | ✅ | ✅ `-t` (diğerleri `skipped`) | ⚠️ sadece hata mesajında | 2 sn |
+| PHPUnit (Laravel) | ✅ TeamCity mesajları | ✅ | ✅ `--filter` | ✅ `locationHint` + `file.php:11` | 1 sn |
+| `flutter test --machine` | ✅ JSON olayları | ✅ | ✅ `--plain-name` | ✅ testin `url`/`line`'ı ve stack | 2 sn |
+
+Bulgular ve sonraki fazlara etkisi:
+
+- **PHPUnit (Faz 5):** `--teamcity` çıktısı IntelliJ'nin kendi test ağacının (SM runner) formatı. `php_qn://` konum ipuçları da hazır. En az iş bu runner'da.
+- **Diğer runner'lar (Faz 1):** Go, TRX, Vitest ve Flutter çıktısını TeamCity mesajlarına çeviren ortak bir dönüştürücü gerekli. Bu ortak test katmanının ana işi.
+- **Go (Faz 3):** `go.work` kökünden her modül ayrı desenle verilmeli (`./lib/... ./api/...`). Tek bir modül dizininden `./...` diğer modülü atlıyor. Hata konumu yapısal değil; `file.go:N:` satırı çıktıdan ayrıştırılmalı.
+- **.NET (Faz 2):** TRX canlı değil, test bitince yazılıyor. Canlı test ağacı için bir VSTest logger'ı veya Microsoft.Testing.Platform değerlendirilmeli. CLI çıktısı sistem dilinde (Türkçe) geliyor; `DOTNET_CLI_UI_LANGUAGE=en` verilmeli.
+- **Vitest (Faz 4):** JSON'da test konumu yok; `includeTaskLocation` ayarı veya özel bir reporter gerekli. JSON sadece `--outputFile` ile güvenilir bir dosyaya yazılıyor.
 
 **Bitti kriteri:** Fork kendi makinende derlenip installer üretiyor, hangi language server'ın kullanılacağı seçilmiş, boşluk tablosu hazır, sonraki fazların kapsamı bu tabloya göre güncellenmiş.
 
@@ -244,6 +264,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] Kendi config, cache ve log dizinleri; resmi IntelliJ ile yan yana kurulup birbirinin ayarlarını bozmasın
 - [ ] Bundled plugin listesi: dil plugin'leri, LSP4IJ, Flutter, Dart, Python; ihtiyaç olmayanlar (ör. Android) çıkarılsın
 - [ ] Güncelleme kontrolü GitHub Releases'a baksın (veya ilk sürümde kapatılsın)
+- [ ] Desteklenen dillerde plugin önerisi bandını kapat. Fork build'inde `.go` dosyası açılınca IDE "*.go files are supported by IntelliJ IDEA" diyor ve kapalı kaynak Go plugin'ini öneriyor.
 - [ ] GitHub Actions ile Windows/macOS/Linux installer build'i; standart runner yetmezse self-hosted runner
   - Upstream'in `.github/workflows/ide_build_and_upload.yml`'ı bunu zaten yapıyor: `ubuntu-latest` üzerinde Docker ile build, `-aarch64.sit` üretimi, sonra `macos-latest` üzerinde `-aarch64.dmg`. Çıktılar imzasız.
   - Fork'ta değişmeden çalışmaz: `.github/actions/build_ide`, `JetBrains/android`'i `github.ref` ile checkout ediyor; bizim branch ve tag'lerimiz orada yok. Ref, `fork/UPSTREAM_BASE`'deki upstream tag'ine sabitlenmeli.
