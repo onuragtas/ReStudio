@@ -204,6 +204,8 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] Language server yöneticisi: sürümü sabitlenmiş server'ları ilk kullanımda kur (`dotnet tool`, `go install`, `npm`, `.phar`), güncellemeyi bilinçli yap
 - [ ] Ortak debug katmanı: bir run configuration'dan DAP adapter'ı başlatma (LSP4IJ DAP üzerine)
 - [ ] Ortak test adaptörü: dış test çıktısını (TRX, `go test -json`, JUnit XML) IntelliJ test penceresine bağlama
+- [ ] Ortak gutter ikonları (▶ Run / Debug): LSP4IJ, LSP dillerinde PSI kurmadığı için bu ikonları koymuyor. `textDocument/documentSymbol` cevabından giriş noktalarını ve testleri bul. `RunLineMarkerContributor` ile ikonu koy, `RunConfigurationProducer` ile run configuration'ı üret. Her dil sadece kuralı verir: Go'da `package main` + `func main` ve `func TestX(t *testing.T)`, C#'ta `Main` ve `[Fact]`, PHP'de `test_` metotları, Dart'ta `main` ve `test()`.
+  - Fork build'inde denendi (8 Kasım 2026): LSP4IJ ile Go dosyasında ▶ yok. Kullanıcı DAP run configuration'ını elle ekleyip launch JSON'unu yazmak zorunda. Delve şablonunun varsayılanı `"program": "${file}"`; kütüphane dosyasında bu ayar çalışmıyor.
 - [ ] Status bar'da server durumu, LSP/DAP trace log ekranı
 
 **Bitti kriteri:** Yeni bir dil eklemek = server tanımı + kurulum tarifi + run/debug/test adaptörü; ortak kod tekrar yazılmıyor.
