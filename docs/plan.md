@@ -236,7 +236,10 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] `.sln`/`.slnx`/`.csproj` okuma (`dotnet msbuild -getProperty/-getItem`), proje → modül eşleme, solution görünümü
 - [ ] `dotnet build`/`run` run configuration'ı, `launchSettings.json`, tıklanabilir build hataları
 - [ ] netcoredbg ile debug ve attach
+  - İlk dilim (8 Kasım 2026): `dotnet` plugin'i. Roslyn LS `solution/open` ile yükleniyor. `Main` ve top-level statements için ▶ var. Run `dotnet run`, Debug ise `dotnet build` ve netcoredbg ile çalışıyor. Debug fork IDE'sinde elle denendi ve breakpoint'te duruyor.
+  - Açık: attach ve test debug'ı (`VSTEST_HOST_DEBUG` ile netcoredbg attach).
 - [ ] `dotnet test` + TRX ile xUnit/NUnit/MSTest test penceresi, test gutter ikonları
+  - İlk dilim: xUnit, NUnit ve MSTest metotlarında ▶ var. `dotnet test` TRX sonuçlarını test bitince test penceresine veriyor. Teste çift tıklayınca koda gidiliyor. Açık: canlı test ağacı.
 - [ ] NuGet tool window (arama, ekleme, güncelleme)
 
 **Bitti kriteri:** ASP.NET Core solution'ı yazılıyor, çalışıyor, test ediliyor, debug ediliyor; async metotlarda step doğru ilerliyor.
