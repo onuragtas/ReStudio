@@ -77,11 +77,17 @@ Kod yazmadan önce mevcut parçaların kutudan ne verdiğini ölç; eksik listes
 
 **Fork'u ayağa kaldır**
 
-- [ ] [JetBrains/intellij-community](https://github.com/JetBrains/intellij-community)'yi GitHub'da fork'la; upstream merge'leri için geçmişi tut (`--depth 1` değil, gerekirse `--filter=blob:none`)
-- [ ] Windows'ta klonlamadan önce `git config --global core.longpaths true`
-- [ ] Son kararlı sürüm tag'inden kendi `main` branch'ini aç; JetBrains'in `master`'ını takip etme. Plan 2025.3.x yazıldığında yazıldı; bugün (Kasım 2026) 2026.x tag'leri var, en son kararlı olanı `git ls-remote --tags upstream 'idea/*'` ile seç
+- [x] [JetBrains/intellij-community](https://github.com/JetBrains/intellij-community)'yi GitHub'da fork'la; upstream merge'leri için geçmişi tut (`--depth 1` değil, gerekirse `--filter=blob:none`). Fork: `onuragtas/ReStudio`, tam geçmişle.
+- [ ] Windows'ta klonlamadan önce `git config --global core.longpaths true` (sadece Windows'ta build alınırsa)
+- [x] Son kararlı sürüm tag'inden kendi `main` branch'ini aç; JetBrains'in `master`'ını takip etme. `main`, `idea/263.7307.200` üzerinde. Bu tag `idea/2026.3` ile aynı commit; base `fork/UPSTREAM_BASE`'de yazar.
 - [ ] Kaynağı IntelliJ ile aç, JetBrains Runtime SDK'sını kur, "IDEA" run configuration'ı ile çalıştır
-- [ ] `./installers.cmd -Dintellij.build.target.os=current` ile kendi işletim sisteminde installer üret; build süresini, disk ve RAM kullanımını not et
+- [x] `./installers.cmd -Dintellij.build.target.os=current` ile kendi işletim sisteminde installer üret; build süresini, disk ve RAM kullanımını not et
+  - Ölçüm (8 Kasım 2026, M1 Pro, 10 çekirdek, 32 GB RAM, soğuk cache): toplam 37,5 dk. Bazel derlemesi 12,5 dk (6.535 action), paketleme ve `.dmg` 25 dk.
+  - En yüksek RAM: yaklaşık 10 GB (Bazel + Java worker'lar). Disk: yaklaşık 28 GB (`out/` 14 GB, Bazel cache 11 GB, `build/download` 2 GB, `android/` 0,9 GB).
+  - Çıktı (`out/idea-ce/artifacts/`): `-aarch64.dmg` (816 MB) ve Intel için `.dmg` (828 MB), ayrıca `.sit`, SHA ve SPDX dosyaları. Tek komut iki mimariyi de üretiyor. İmzasız; ad hâlâ "IntelliJ IDEA OSS".
+  - Paketleme sırasında build iki kez birkaç dakika dosya erişiminde bekledi. Aynı anda VS Code'un `rg` aramaları ve Spotlight çalışıyordu. `out/`, `android/`, `bazel-*` dizinlerini VS Code `search.exclude`/`files.watcherExclude` ve Spotlight dışında tut.
+  - Build, repo kökünde `android/` checkout'u ister; yoksa `intellij.android.adb.iml` bulunamadı hatasıyla durur. `getPlugins.sh` eski `git.jetbrains.org` adresini kullanır, bunun yerine: `git clone --depth 1 --branch "$(cat fork/UPSTREAM_BASE)" https://github.com/JetBrains/android.git android` (~940 MB). `JetBrains/android`'de aynı tag var.
+  - Her upstream merge'den sonra `android/` da yeni tag'e geçirilmeli.
 
 **Dil bileşenlerini dene**
 
@@ -173,7 +179,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Upstream'in `.github/workflows/ide_build_and_upload.yml`'ı bunu zaten yapıyor: `ubuntu-latest` üzerinde Docker ile build, `-aarch64.sit` üretimi, sonra `macos-latest` üzerinde `-aarch64.dmg`. Çıktılar imzasız.
   - Fork'ta değişmeden çalışmaz: `.github/actions/build_ide`, `JetBrains/android`'i `github.ref` ile checkout ediyor; bizim branch ve tag'lerimiz orada yok. Ref, `fork/UPSTREAM_BASE`'deki upstream tag'ine sabitlenmeli.
   - Upstream dosyalarına dokunmamak için ayrı bir `fork-release.yml` yaz: build adımlarını ondan çağır, `.dmg`'yi `gh release create` ile GitHub Releases'a yükle.
-  - Sadece Apple Silicon (aarch64) `.dmg` üretiliyor; Intel Mac gerekiyorsa x64 `.sit`/`.dmg` adımı eklenmeli.
+  - Upstream workflow sadece Apple Silicon (aarch64) `.dmg`'yi yüklüyor. Yerel build Intel `.dmg`'yi de üretiyor; Intel Mac gerekiyorsa workflow'a onun yükleme adımı eklenmeli.
   - Upstream'in günlük `schedule` tetikleyicisi fork'ta gereksiz dakika harcar; fork'ta kapalı kalsın.
 - [ ] macOS imzalama ve notarization (yapılmazsa README'de Gatekeeper notu: `xattr -dr com.apple.quarantine`). İmza için Apple Developer ID sertifikası ve notarization bilgileri GitHub secret olarak eklenmeli.
 - [ ] `LICENSE` (Apache 2.0), `NOTICE` ve üçüncü taraf lisans listesi
@@ -214,7 +220,7 @@ Her dil modülü ayrı bir plugin `.zip`'i üretir ve `core`'a bağımlıdır; b
 | --- | --- |
 | Dil | Kotlin, JDK 21 |
 | Build | Gradle + IntelliJ Platform Gradle Plugin 2.x |
-| Hedef IDE | Plugin: fork'un baz aldığı platform sürümü ve üstü · Fork: Faz 0'da seçilen son kararlı tag'den (2026.x) başlayan kendi branch'in |
+| Hedef IDE | Plugin: platform 263 (2026.3) ve üstü · Fork: `idea/263.7307.200` (= `idea/2026.3`) tag'inden başlayan `main` |
 | LSP/DAP istemcisi | LSP4IJ (bundled plugin) |
 | Language server'lar | Roslyn LS, gopls, vtsls, vscode-langservers-extracted, Vue LS, Angular LS, Tailwind LS, ESLint LS, Phpactor |
 | Debug adapter'lar | netcoredbg, Delve (`dlv dap`), vscode-js-debug, vscode-php-debug |
