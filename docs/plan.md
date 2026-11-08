@@ -237,9 +237,11 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] `dotnet build`/`run` run configuration'ı, `launchSettings.json`, tıklanabilir build hataları
 - [ ] netcoredbg ile debug ve attach
   - İlk dilim (8 Kasım 2026): `dotnet` plugin'i. Roslyn LS `solution/open` ile yükleniyor. `Main` ve top-level statements için ▶ var. Run `dotnet run`, Debug ise `dotnet build` ve netcoredbg ile çalışıyor. Debug fork IDE'sinde elle denendi ve breakpoint'te duruyor.
-  - Açık: attach ve test debug'ı (`VSTEST_HOST_DEBUG` ile netcoredbg attach).
+  - Test debug'ı ve attach yazıldı (8 Kasım 2026). Test debug'ı `dotnet test`'i `VSTEST_HOST_DEBUG=1` ile başlatıyor, sonra netcoredbg bekleyen testhost'a bağlanıyor. "Attach to Process" listesi .NET süreçleri için netcoredbg sunuyor. İkisi de testli. IDE'de elle denenmedi.
+  - LSP4IJ'de "adapter'ı başlat, sonra attach et" modu yok: ATTACH modu süreç başlatmıyor. Descriptor LSP4IJ'ye LAUNCH, DAP istemcisine ATTACH veriyor.
 - [ ] `dotnet test` + TRX ile xUnit/NUnit/MSTest test penceresi, test gutter ikonları
-  - İlk dilim: xUnit, NUnit ve MSTest metotlarında ▶ var. `dotnet test` TRX sonuçlarını test bitince test penceresine veriyor. Teste çift tıklayınca koda gidiliyor. Açık: canlı test ağacı.
+  - İlk dilim: xUnit, NUnit ve MSTest metotlarında ▶ var. Teste çift tıklayınca koda gidiliyor.
+  - Test ağacı konsol logger'ının sonuç satırlarından doluyor (`console;verbosity=normal`). VSTest bu satırları çalışma boyunca toplu yazıyor. TRX yedek: konsolda sonuç satırı yoksa ağacı o dolduruyor.
 - [ ] NuGet tool window (arama, ekleme, güncelleme)
 
 **Bitti kriteri:** ASP.NET Core solution'ı yazılıyor, çalışıyor, test ediliyor, debug ediliyor; async metotlarda step doğru ilerliyor.
