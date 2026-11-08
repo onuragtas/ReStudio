@@ -220,7 +220,12 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Go prototipi yazıldı (8 Kasım 2026). Giriş noktalarını şimdilik regex buluyor, `documentSymbol` değil. Sebep: ikon gopls başlamadan görünmeli.
   - TextMate dosyası tek bir PSI leaf: TextMate parser'ı boş bir lexer kullanıyor. `RunLineMarkerContributor` bu yüzden sadece ilk satıra ikon koyabilir. Çözüm: `core`'daki `EntryPointLineMarkerProvider` her giriş noktası için ayrı bir marker ekliyor. Run aksiyonları giriş noktasını `EntryPointLocation` içinde taşıyor.
   - Platform testlerinde tam highlighting çalıştırılmamalı. LSP4IJ adımları test ortamında gopls cevabını sonsuza kadar bekliyor. Testler provider'ı doğrudan çağırıyor.
-  - Açık: fork IDE'sinde elle deneme, diğer dillerin kuralları.
+  - Fork IDE'sinde elle denendi (8 Kasım 2026): Go'da ▶ ikonu, Run ile test penceresi ve Debug ile breakpoint çalışıyor.
+  - Debug için üç LSP4IJ kuralı öğrenildi:
+    - Delve, `go test -c` komutunu kendi çalışma klasöründe çalıştırıyor. Her launch `dlvCwd` vermeli.
+    - Editör bir breakpoint'e ancak bir debug adapter dosyayı kabul ederse izin veriyor. Delve, `debugAdapterServer` olarak kayıtlı.
+    - Oturum bir breakpoint'i ancak run configuration'ın `serverId` değeri doluysa gönderiyor. Boş `serverId` breakpoint'i çizik gösteriyor.
+  - Açık: diğer dillerin kuralları.
 - [ ] Status bar'da server durumu, LSP/DAP trace log ekranı
 
 **Bitti kriteri:** Yeni bir dil eklemek = server tanımı + kurulum tarifi + run/debug/test adaptörü; ortak kod tekrar yazılmıyor.
