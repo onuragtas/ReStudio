@@ -273,7 +273,9 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Vitest 5, `-t` filtresini `" > "` ile birleşmiş adlarla eşliyor; JSON reporter ise adları boşlukla yazıyor.
   - Vitest test ağacı, eklentiyle gelen bir reporter'dan (`restudio-reporter.mjs`) id tabanlı TeamCity mesajlarıyla doluyor.
   - LSP4IJ, plugin'lerin sunucularına bakmadan şablon önerisi gösteriyor ("*.ts files are supported by language servers"). `core`, bu öneriyi ReStudio dillerinin dosyalarında gizleyen bir sağlayıcıyla değiştiriyor.
-  - Açık: Vue LS köprüsü, ESLint/Prettier, Chrome debug, Jest, HTML/CSS/JSON server'ları, JSX'te Tailwind.
+  - Vue (9 Kasım 2026): `.vue` dosyası vtsls'e (`@vue/typescript-plugin` ile) ve Vue LS'e gidiyor. Vue LS'in `tsserver/request` mesajları vtsls'e köprüleniyor. Renk için plugin, vuejs/language-tools'un TextMate grammar'ını (MIT) taşıyor. Fork IDE'sinde elle denendi: hover, definition ve template completion çalışıyor.
+  - Köprü hatası: lsp4j tek parametreli bir bildirimi bir dizi daha sarıyor ve kendi trace'i bunu göstermiyor. Ham bayt kaydı (`stdio-tee.mjs`, debug seviyesinde) bunu buldu.
+  - Açık: ESLint/Prettier, Chrome debug, Jest, HTML/CSS/JSON server'ları, JSX'te Tailwind.
 
 **Bitti kriteri:** React (Vite) ve Vue uygulamasında yazma, lint, format, dev server, tarayıcıda breakpoint ve testler çalışıyor.
 
