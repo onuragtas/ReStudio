@@ -206,13 +206,18 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 
 ### Faz 1: Ortak dil altyapısı (3 hafta)
 
-- [ ] Gradle multi-module plugin reposu: `core` + dil modülleri; LSP4IJ'ye bağımlılık
+- [x] Gradle multi-module plugin reposu: `core` + dil modülleri; LSP4IJ'ye bağımlılık
+  - 8 Kasım 2026: `core` ve `go` modülleri derleniyor, 9 test geçiyor. `core` her dil plugin'ine gömülü (embedded) content module olarak giriyor; `plugin.xml` içindeki `<content>` girdisi şart.
 - [ ] SDK bulucu: `dotnet`, `go`, `php`, `node`, `flutter` yollarını PATH'ten bul, ayar ekranında değiştirilebilsin
 - [ ] Language server yöneticisi: sürümü sabitlenmiş server'ları ilk kullanımda kur (`dotnet tool`, `go install`, `npm`, `.phar`), güncellemeyi bilinçli yap
 - [ ] Ortak debug katmanı: bir run configuration'dan DAP adapter'ı başlatma (LSP4IJ DAP üzerine)
 - [ ] Ortak test adaptörü: dış test çıktısını (TRX, `go test -json`, JUnit XML) IntelliJ test penceresine bağlama
 - [ ] Ortak gutter ikonları (▶ Run / Debug): LSP4IJ, LSP dillerinde PSI kurmadığı için bu ikonları koymuyor. `textDocument/documentSymbol` cevabından giriş noktalarını ve testleri bul. `RunLineMarkerContributor` ile ikonu koy, `RunConfigurationProducer` ile run configuration'ı üret. Her dil sadece kuralı verir: Go'da `package main` + `func main` ve `func TestX(t *testing.T)`, C#'ta `Main` ve `[Fact]`, PHP'de `test_` metotları, Dart'ta `main` ve `test()`.
   - Fork build'inde denendi (8 Kasım 2026): LSP4IJ ile Go dosyasında ▶ yok. Kullanıcı DAP run configuration'ını elle ekleyip launch JSON'unu yazmak zorunda. Delve şablonunun varsayılanı `"program": "${file}"`; kütüphane dosyasında bu ayar çalışmıyor.
+  - Go prototipi yazıldı (8 Kasım 2026). Giriş noktalarını şimdilik regex buluyor, `documentSymbol` değil. Sebep: ikon gopls başlamadan görünmeli.
+  - TextMate dosyası tek bir PSI leaf: TextMate parser'ı boş bir lexer kullanıyor. `RunLineMarkerContributor` bu yüzden sadece ilk satıra ikon koyabilir. Çözüm: `core`'daki `EntryPointLineMarkerProvider` her giriş noktası için ayrı bir marker ekliyor. Run aksiyonları giriş noktasını `EntryPointLocation` içinde taşıyor.
+  - Platform testlerinde tam highlighting çalıştırılmamalı. LSP4IJ adımları test ortamında gopls cevabını sonsuza kadar bekliyor. Testler provider'ı doğrudan çağırıyor.
+  - Açık: fork IDE'sinde elle deneme, diğer dillerin kuralları.
 - [ ] Status bar'da server durumu, LSP/DAP trace log ekranı
 
 **Bitti kriteri:** Yeni bir dil eklemek = server tanımı + kurulum tarifi + run/debug/test adaptörü; ortak kod tekrar yazılmıyor.
@@ -317,8 +322,8 @@ Her dil modülü ayrı bir plugin `.zip`'i üretir ve `core`'a bağımlıdır; b
 
 | Parça | Seçim |
 | --- | --- |
-| Dil | Kotlin, JDK 21 |
-| Build | Gradle + IntelliJ Platform Gradle Plugin 2.x |
+| Dil | Kotlin 2.4, JDK 25 (platform 263 en az Java 25 ister: `product-info.json`, `minRequiredJavaVersion`) |
+| Build | Gradle 9.8 + IntelliJ Platform Gradle Plugin 2.19 |
 | Hedef IDE | Plugin: platform 263 (2026.3) ve üstü · Fork: `idea/263.7307.200` (= `idea/2026.3`) tag'inden başlayan `main` |
 | LSP/DAP istemcisi | LSP4IJ (bundled plugin) |
 | Language server'lar | Roslyn LS, gopls, vtsls, vscode-langservers-extracted, Vue LS, Angular LS, Tailwind LS, ESLint LS, Phpactor |
