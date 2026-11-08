@@ -268,10 +268,11 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] vscode-js-debug ile Node ve Chrome debug
 - [ ] Vitest/Jest sonuçlarını test penceresine bağlama
 
-- İlk dilim (9 Kasım 2026): `web` plugin'i. vtsls (TS/JS), Angular LS ve Tailwind LS (sadece o projelerde, document matcher ile), `package.json` script'leri için ▶ (Run paket yöneticisiyle, Debug js-debug ile), Vitest için ▶ (Run canlı test ağacı, Debug js-debug ile). Testli; fork IDE'sinde henüz elle denenmedi.
+- İlk dilim (9 Kasım 2026): `web` plugin'i. vtsls (TS/JS), Angular LS ve Tailwind LS (sadece o projelerde, document matcher ile), `package.json` script'leri için ▶ (Run paket yöneticisiyle, Debug js-debug ile), Vitest için ▶ (Run canlı test ağacı, Debug js-debug ile). Fork IDE'sinde elle denendi: vtsls hover ve completion, `npm run dev`, Vitest Run ve Debug çalışıyor.
   - js-debug her Node sürecini `startDebugging` ile alt oturum olarak açıyor; LSP4IJ bunu destekliyor (probe: js-debug-npm, js-debug-vitest).
   - Vitest 5, `-t` filtresini `" > "` ile birleşmiş adlarla eşliyor; JSON reporter ise adları boşlukla yazıyor.
   - Vitest test ağacı, eklentiyle gelen bir reporter'dan (`restudio-reporter.mjs`) id tabanlı TeamCity mesajlarıyla doluyor.
+  - LSP4IJ, plugin'lerin sunucularına bakmadan şablon önerisi gösteriyor ("*.ts files are supported by language servers"). `core`, bu öneriyi ReStudio dillerinin dosyalarında gizleyen bir sağlayıcıyla değiştiriyor.
   - Açık: Vue LS köprüsü, ESLint/Prettier, Chrome debug, Jest, HTML/CSS/JSON server'ları, JSX'te Tailwind.
 
 **Bitti kriteri:** React (Vite) ve Vue uygulamasında yazma, lint, format, dev server, tarayıcıda breakpoint ve testler çalışıyor.
