@@ -91,14 +91,61 @@ Kod yazmadan önce mevcut parçaların kutudan ne verdiğini ölç; eksik listes
 
 **Dil bileşenlerini dene**
 
+Geliştirme makinesine kurulanlar (8 Kasım 2026, Homebrew, `go install`, `npm -g`, `dotnet tool -g`, `pecl`). GitHub release'lerinden indirilenler `~/.restudio-dev/tools/<araç>/<sürüm>/` altında:
+
+| Dil | SDK | Language server | Debugger |
+| --- | --- | --- | --- |
+| .NET | .NET SDK 10.0.403 | roslyn-language-server 5.13.0-1.26514.10, csharp-ls 0.28.0 | netcoredbg 3.2.0-1092 (`osx-arm64`) |
+| Go | Go 1.27.3 | gopls 0.24.0 | Delve 1.27.2 |
+| Frontend | Node.js 26.13.0, TypeScript 7.0.2 | vtsls 0.3.0, typescript-language-server 6.0.3, vscode-langservers-extracted 4.10.0, Vue LS 3.3.14, Angular LS 22.2.5, Tailwind LS 0.16.0 | vscode-js-debug 1.140.0 |
+| PHP | PHP 8.5.12, Composer 2.11.1 | Phpactor 2026.10.07.0 (`.phar`) | Xdebug 3.5.3, vscode-php-debug 1.40.2 |
+| Flutter | Flutter 3.47.9 | Dart analysis server | Flutter plugin |
+| Java | OpenJDK 21.0.13 (keg-only, `JAVA_HOME=/opt/homebrew/opt/openjdk@21`) | | |
+
+TypeScript 7 Go ile yeniden yazılmış sürüm ve `tsserver.js` içermez. Vite'ın React şablonu TS 7, Vue şablonu TS 6.0.3 kullanıyor. Sonuçlar aşağıdaki boşluk tablosunda.
+
 - [ ] Resmi IntelliJ IDEA üzerine [LSP4IJ](https://github.com/redhat-developer/lsp4ij) kur; hazır şablonları (Go, HTML, CSS, TypeScript vb.) ve [user-defined language server](https://www.github.com/redhat-developer/lsp4ij/blob/main/docs/UserDefinedLanguageServer.md) ayarını kullan (fork'u beklemeye gerek yok)
 - [ ] .NET: `dotnet tool install --global roslyn-language-server --prerelease` ([NuGet](https://www.nuget.org/packages/roslyn-language-server.linux-x64)); yedek olarak [csharp-ls](https://github.com/razzmatazz/csharp-language-server); debug için [netcoredbg](https://github.com/samsung/netcoredbg)
 - [ ] Go: `gopls` + `dlv dap`
 - [ ] Frontend: vtsls (veya typescript-language-server), vscode-langservers-extracted, Vue LS, Angular LS, ESLint; debug için vscode-js-debug
 - [ ] PHP: Phpactor + vscode-php-debug adaptörüyle Xdebug
 - [ ] Flutter: fork build'inde Flutter ve Dart plugin'lerinin kurulup çalıştığını doğrula
-- [ ] Her dil için bir örnek proje seç: ASP.NET Core solution (5-10 proje), çok paketli Go servisi, Laravel uygulaması, React (Vite) ve Vue uygulaması, Flutter uygulaması
+- [x] Her dil için bir örnek proje seç: ASP.NET Core solution (5-10 proje), çok paketli Go servisi, Laravel uygulaması, React (Vite) ve Vue uygulaması, Flutter uygulaması
+  - `~/projects/ReStudio-langs/testdata/` (yerel repo, push edilmedi). Hepsi şablondan üretildi ve build/test'leri geçiyor: `dotnet/` (7 proje, `Shop.sln`), `go/` (`go.work`, 2 modül), `php/` (Laravel), `web/react/` (TS 7), `web/vue/` (TS 6, ESLint eklendi), `flutter/`. Angular örneği yok.
 - [ ] Boşluk analizi: dil × özellik (completion, navigation, diagnostics, run, debug, test) için "çalışıyor / kısmen / yok" tablosu
+  - Language server katmanı ölçüldü (aşağıda). Run, debug ve test henüz denenmedi. LSP4IJ ile IDE içinde deneme de yapılmadı.
+
+**Boşluk analizi: language server katmanı** (8 Kasım 2026)
+
+Ölçüm aracı: `ReStudio-langs/tools/lsp-probe/` (stdio üzerinden başsız bir LSP istemcisi). Her server bir örnek dosyada başlatıldı; tüm trafik `.lsp-traces/<case>.jsonl`'a kaydedildi. ✅ çalışıyor, ⚠️ kısmen, ❌ yok, — server'ın işi değil.
+
+| Server (proje) | Definition | Hover | Completion | References | Rename | Formatting | Diagnostics | Süre |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| gopls (Go, `go.work`) | ✅ diğer modüle | ✅ | ✅ | ✅ 3 dosya | ✅ 3 dosya | ✅ | ✅ push | 2 sn |
+| Roslyn LS, `solution/open` yok (.NET) | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ⚠️ sadece tek dosya | 95 sn |
+| Roslyn LS, `solution/open` ile (.NET) | ✅ diğer projeye | ✅ | ✅ | ✅ 3 dosya | ✅ | ✅ | ✅ pull | 12 sn |
+| csharp-ls `--solution` (.NET) | ✅ | ✅ | ✅ | ✅ 3 dosya | ✅ | ✅ | ✅ | 6 sn |
+| vtsls (React, TS 7) | ✅ `@types/react` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 2 sn |
+| typescript-language-server (React, TS 7) | ❌ başlamıyor | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | — |
+| TS 7 `tsc --lsp --stdio` (React) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 2 sn |
+| vtsls (Vue, `.ts` dosyası) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ⚠️ `.vue` import'unu bulamıyor | 2 sn |
+| Vue LS 3 (Vue, `.vue` dosyası) | ❌ zaman aşımı | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | — |
+| CSS LS | — | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | 6 sn |
+| HTML LS | — | ✅ | ✅ | — | ✅ etiket çifti | ✅ | ✅ | 6 sn |
+| ESLint LS (Vue, `.ts`) | — | — | — | — | — | — | ✅ pull | 3 sn |
+| Phpactor (Laravel) | ✅ `vendor/`'a | ✅ | ✅ | ✅ | ⚠️ `vendor/`'u değiştiriyor | ❌ | ⚠️ yanlış alarm | 26 sn |
+| Dart analysis server (Flutter) | ✅ Flutter SDK'ya | ✅ | ✅ | ✅ | ✅ SDK sembolünü reddediyor | ✅ | ✅ | 6 sn |
+
+Bulgular ve sonraki fazlara etkisi:
+
+- **Roslyn LS (Faz 2):** `initialized`'dan sonra `solution/open` bildirimi şart. Bildirim olmadan dosya "misc file" kalır ve hiçbir özellik çalışmaz. Bildirimle her şey 12 sn'de hazır. Diagnostic mesajları sistem dilinde (Türkçe) geliyor; dil IDE'nin diline göre ayarlanmalı.
+- **csharp-ls:** `--solution` ile özel mesaj gerekmeden aynı sonucu daha hızlı veriyor (6 sn). Roslyn LS'e karşı gerçek bir yedek.
+- **TypeScript (Faz 4):** typescript-language-server kendi TS'ini getirmediği için TS 7 projelerinde başlamıyor; plandan çıkarılmalı. vtsls kendi TS 5.9.3'üne geri dönüyor ve çalışıyor. TS 7'nin `tsc --lsp` modu tam çalışıyor; TS 7 projelerinde tercih edilebilir.
+- **Vue (Faz 4):** Vue LS 3, TypeScript işlerini istemciye `tsserver/request` bildirimiyle gönderiyor ve cevap bekliyor. Plugin; Vue LS'i ve `@vue/typescript-plugin` yüklü vtsls'yi birlikte başlatıp bu mesajları köprülemeli (`tsserver/response`). Köprü olmadan Vue desteği hiç çalışmıyor.
+- **ESLint (Faz 4):** typescript-eslint, TS 7'yi desteklemiyor (peer: `>=4.8.4 <6.1.0`). Vite'ın React şablonu ESLint yerine oxlint getiriyor. oxlint desteği değerlendirilmeli.
+- **Formatting:** Server'lar istemcinin gönderdiği girinti ayarını kullanıyor. Ayar `.editorconfig` veya Prettier'dan gelmeli; aksi hâlde formatlama tüm dosyayı değiştiriyor.
+- **PHP (Faz 5):** Phpactor rename, `vendor/` altındaki Laravel dosyalarını düzenliyor; plugin `vendor/`'a düşen düzenlemeleri engellemeli. Formatting yok (php-cs-fixer entegrasyonu gerekli). `view()` helper'ı için "Function not found" yanlış alarmı veriyor; Composer `autoload.files` indekslenmiyor olabilir.
+- **Kapsam dışı kalanlar:** Tailwind LS (örnek projede Tailwind yok), Angular LS (Angular örneği yok). Debug adapter'lar (netcoredbg, Delve, js-debug, php-debug) ve test runner'lar henüz denenmedi.
 
 **Bitti kriteri:** Fork kendi makinende derlenip installer üretiyor, hangi language server'ın kullanılacağı seçilmiş, boşluk tablosu hazır, sonraki fazların kapsamı bu tabloya göre güncellenmiş.
 
@@ -142,8 +189,8 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 
 ### Faz 4: Frontend (4-5 hafta)
 
-- [ ] TS/JS için vtsls (veya typescript-language-server); HTML, CSS, JSON için vscode-langservers-extracted
-- [ ] Vue LS (TypeScript server'la birlikte çalışacak şekilde), Angular LS, Tailwind CSS LS
+- [ ] TS/JS için vtsls; TS 7 projelerinde projenin kendi `tsc --lsp` server'ı. HTML, CSS, JSON için vscode-langservers-extracted
+- [ ] Vue LS: `tsserver/request` mesajlarını `@vue/typescript-plugin` yüklü vtsls'ye köprüle (Faz 0 bulgusu). Angular LS, Tailwind CSS LS
 - [ ] ESLint LS ve Prettier ile formatlama
 - [ ] `package.json` script'leri için run configuration (npm, pnpm, yarn, bun); `node_modules/.bin` çözümü
 - [ ] vscode-js-debug ile Node ve Chrome debug
