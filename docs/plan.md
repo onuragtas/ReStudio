@@ -106,14 +106,15 @@ Geliştirme makinesine kurulanlar (8 Kasım 2026, Homebrew, `go install`, `npm -
 TypeScript 7 Go ile yeniden yazılmış sürüm ve `tsserver.js` içermez. Vite'ın React şablonu TS 7, Vue şablonu TS 6.0.3 kullanıyor. Sonuçlar aşağıdaki boşluk tablosunda.
 
 - [ ] Resmi IntelliJ IDEA üzerine [LSP4IJ](https://github.com/redhat-developer/lsp4ij) kur; hazır şablonları (Go, HTML, CSS, TypeScript vb.) ve [user-defined language server](https://www.github.com/redhat-developer/lsp4ij/blob/main/docs/UserDefinedLanguageServer.md) ayarını kullan (fork'u beklemeye gerek yok)
-- [ ] .NET: `dotnet tool install --global roslyn-language-server --prerelease` ([NuGet](https://www.nuget.org/packages/roslyn-language-server.linux-x64)); yedek olarak [csharp-ls](https://github.com/razzmatazz/csharp-language-server); debug için [netcoredbg](https://github.com/samsung/netcoredbg)
+- [x] .NET: `dotnet tool install --global roslyn-language-server --prerelease` ([NuGet](https://www.nuget.org/packages/roslyn-language-server.linux-x64)); yedek olarak [csharp-ls](https://github.com/razzmatazz/csharp-language-server); debug için [netcoredbg](https://github.com/samsung/netcoredbg)
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): Roslyn ve netcoredbg kullanılıyor. csharp-ls yedeği yok.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 4a23591), derlendi, test edilmedi: Ayar: Auto, Roslyn LS ya da csharp-ls.
 - [x] Go: `gopls` + `dlv dap`
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `go/lsp/GoplsServerFactory.kt`, `go/debug/DelveDescriptorFactory.kt` ve probe kayıtları var.
 - [x] Frontend: vtsls (veya typescript-language-server), vscode-langservers-extracted, Vue LS, Angular LS, ESLint; debug için vscode-js-debug
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): probe kayıtları ve `testdata/web/*` var. Plugin, vscode-langservers-extracted'dan sadece ESLint'i kullanıyor.
 - [x] PHP: Phpactor + vscode-php-debug adaptörüyle Xdebug
-  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `php/lsp/PhpactorServerFactory.kt`, `php/debug/PhpDebugDescriptorFactory.kt` ve probe kayıtları var.
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `php/lsp/PhpServerFactory.kt`, `php/debug/PhpDebugDescriptorFactory.kt` ve probe kayıtları var.
 - [x] Flutter: fork build'inde Flutter ve Dart plugin'lerinin kurulup çalıştığını doğrula
   - Marketplace bu build için Dart 511.0.0 ve Flutter 98.0.0 veriyor. İkisi de hatasız yükleniyor. Dart SDK 3.13.7 bulunuyor ve analysis server çalışıyor.
   - Dart plugin'i platformun yerleşik LSP API'sini (`com.intellij.platform.lsp`) kullanıyor. Bu API açık kaynak build'de var. Faz 1'de LSP4IJ'ye alternatif olarak değerlendirilmeli.
@@ -212,10 +213,12 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 
 - [x] Gradle multi-module plugin reposu: `core` + dil modülleri; LSP4IJ'ye bağımlılık
   - 8 Kasım 2026: `core` ve `go` modülleri derleniyor, 9 test geçiyor. `core` her dil plugin'ine gömülü (embedded) content module olarak giriyor; `plugin.xml` içindeki `<content>` girdisi şart.
-- [ ] SDK bulucu: `dotnet`, `go`, `php`, `node`, `flutter` yollarını PATH'ten bul, ayar ekranında değiştirilebilsin
+- [x] SDK bulucu: `dotnet`, `go`, `php`, `node`, `flutter` yollarını PATH'ten bul, ayar ekranında değiştirilebilsin
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `core/sdk/ToolLocator.kt` PATH'i ve sabit dizinleri arıyor. Ayar ekranı ve Flutter bulucusu yok.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs fe516fb), derlendi, test edilmedi: Settings > Languages & Frameworks > ReStudio Tools her aracın yolunu gösterir ve değiştirir. Diller araçlarını `toolProvider` extension point'iyle kaydeder. Flutter SDK bulucusu eklendi.
 - [ ] Language server yöneticisi: sürümü sabitlenmiş server'ları ilk kullanımda kur (`dotnet tool`, `go install`, `npm`, `.phar`), güncellemeyi bilinçli yap
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): kurulum kodu yok. Araçlar sadece PATH'te ya da `~/.restudio-dev/tools` altında aranıyor.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs fe516fb), derlendi, test edilmedi: `ToolInstaller` sabit sürümü ilk kullanımda kurar (npm, `go install`, `dotnet tool`, SHA-256 kontrollü indirme); önce kullanıcıya sorar. Henüz hiçbir dil modülü çağırmıyor.
 - [x] Ortak debug katmanı: bir run configuration'dan DAP adapter'ı başlatma (LSP4IJ DAP üzerine)
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `core/dap/DapLaunch.kt` ve `FileDebugAdapterFactory.kt`; dört dil de kullanıyor.
 - [ ] Ortak test adaptörü: dış test çıktısını (TRX, `go test -json`, JUnit XML) IntelliJ test penceresine bağlama
@@ -223,6 +226,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Ortak katman yazıldı (8 Kasım 2026): `core`'daki `TestEventTranslator` bir runner satırını id tabanlı TeamCity mesajlarına çeviriyor. Her dil sadece kendi translator'ını veriyor.
   - Go bitti: `go test -json` translator'ı alt testleri, skip, panic ve derleme hatasını işliyor. Go Test run configuration'ı LSP4IJ DAP configuration'ından türüyor. Run test penceresini açıyor, Debug Delve'i başlatıyor.
   - Açık: TRX, Vitest, PHPUnit ve Flutter translator'ları. Test penceresinden koda gitme (test locator).
+  - Yazıldı (10 Kasım 2026, ReStudio-langs fe516fb), derlendi, test edilmedi: `JUnitXmlTranslator` eklendi. Flutter translator'ı yok.
 - [x] Ortak gutter ikonları (▶ Run / Debug): LSP4IJ, LSP dillerinde PSI kurmadığı için bu ikonları koymuyor. `textDocument/documentSymbol` cevabından giriş noktalarını ve testleri bul. `RunLineMarkerContributor` ile ikonu koy, `RunConfigurationProducer` ile run configuration'ı üret. Her dil sadece kuralı verir: Go'da `package main` + `func main` ve `func TestX(t *testing.T)`, C#'ta `Main` ve `[Fact]`, PHP'de `test_` metotları, Dart'ta `main` ve `test()`.
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): dört dilin dedektörü `core/entrypoints/` üzerinde çalışıyor.
   - Fork build'inde denendi (8 Kasım 2026): LSP4IJ ile Go dosyasında ▶ yok. Kullanıcı DAP run configuration'ını elle ekleyip launch JSON'unu yazmak zorunda. Delve şablonunun varsayılanı `"program": "${file}"`; kütüphane dosyasında bu ayar çalışmıyor.
@@ -235,17 +239,22 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
     - Editör bir breakpoint'e ancak bir debug adapter dosyayı kabul ederse izin veriyor. Delve, `debugAdapterServer` olarak kayıtlı.
     - Oturum bir breakpoint'i ancak run configuration'ın `serverId` değeri doluysa gönderiyor. Boş `serverId` breakpoint'i çizik gösteriyor.
   - Açık: diğer dillerin kuralları.
-- [ ] Status bar'da server durumu, LSP/DAP trace log ekranı
+- [x] Status bar'da server durumu, LSP/DAP trace log ekranı
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): LSP trace'i debug log açıkken dosyaya yazılıyor. Status bar widget'ı, trace ekranı ve DAP trace'i yok.
-- [ ] New Project sihirbazı: her dil kendi proje şablonunu versin (istek: Onur, 10 Kasım 2026). Python, Dart ve Flutter kendi kayıtlarını yapıyor. ReStudio-langs'teki dört modülün hiçbiri `moduleBuilder` ya da `newProjectWizard.*` kaydetmiyor; bu yüzden Go, .NET, PHP ve web dilleri sihirbazda yok.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs fe516fb), derlendi, test edilmedi: Status bar widget'ı LSP4IJ server'larını gösterir; Help > Diagnostic Tools > Open LSP Trace. DAP trace'i yok.
+- [x] New Project sihirbazı: her dil kendi proje şablonunu versin (istek: Onur, 10 Kasım 2026). Python, Dart ve Flutter kendi kayıtlarını yapıyor. ReStudio-langs'teki dört modülün hiçbiri `moduleBuilder` ya da `newProjectWizard.*` kaydetmiyor; bu yüzden Go, .NET, PHP ve web dilleri sihirbazda yok.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs a29be74, 4a23591, 87b9118, 08eb06c), derlendi, test edilmedi: Go (`go mod init`), .NET (console, classlib, xunit), web (Vite React/Vue/vanilla, Node.js) ve PHP (Composer, Laravel) generator'ları `newProjectWizard.generator` ile kayıtlı.
 
 **Bitti kriteri:** Yeni bir dil eklemek = server tanımı + kurulum tarifi + run/debug/test adaptörü; ortak kod tekrar yazılmıyor.
 
 ### Faz 2: C# ve .NET (8-10 hafta)
 
-- [ ] Roslyn LS entegrasyonu; özel mesajlar (solution/proje yükleme, `restore` isteği)
+- [x] Roslyn LS entegrasyonu; özel mesajlar (solution/proje yükleme, `restore` isteği)
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 4a23591), derlendi, test edilmedi: Probe kaydı: Roslyn LS restore isteği göndermiyor, restore'u kendisi yapıyor. İstemci otomatik restore'u açar ve yükleme hatalarını bildirir; Tools > .NET'te elle restore var.
 - [ ] `.sln`/`.slnx`/`.csproj` okuma (`dotnet msbuild -getProperty/-getItem`), proje → modül eşleme, solution görünümü
-- [ ] `dotnet build`/`run` run configuration'ı, `launchSettings.json`, tıklanabilir build hataları
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 4a23591), derlendi, test edilmedi: `dotnet msbuild -getProperty/-getItem` cache'li; her proje bir modül, `ProjectReference` modül bağımlılığı. Solution görünümü yok.
+- [x] `dotnet build`/`run` run configuration'ı, `launchSettings.json`, tıklanabilir build hataları
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 4a23591), derlendi, test edilmedi: `launchSettings.json` profilleri ve tıklanabilir build hataları eklendi.
 - [x] netcoredbg ile debug ve attach
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `dotnet/debug/` ve `DotnetAttach*` dosyaları.
   - İlk dilim (8 Kasım 2026): `dotnet` plugin'i. Roslyn LS `solution/open` ile yükleniyor. `Main` ve top-level statements için ▶ var. Run `dotnet run`, Debug ise `dotnet build` ve netcoredbg ile çalışıyor. Debug fork IDE'sinde elle denendi ve breakpoint'te duruyor.
@@ -258,32 +267,40 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `DotnetTestRunConfiguration`, `DotnetConsoleTranslator`, `TrxReport`.
   - İlk dilim: xUnit, NUnit ve MSTest metotlarında ▶ var. Teste çift tıklayınca koda gidiliyor.
   - Test ağacı konsol logger'ının sonuç satırlarından doluyor (`console;verbosity=normal`). VSTest bu satırları çalışma boyunca toplu yazıyor. TRX yedek: konsolda sonuç satırı yoksa ağacı o dolduruyor.
-- [ ] NuGet tool window (arama, ekleme, güncelleme)
+- [x] NuGet tool window (arama, ekleme, güncelleme)
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 4a23591), derlendi, test edilmedi: Arama, ekleme, güncelleme, kaldırma. Güncellemede sürüm seçimi yok.
 
 **Bitti kriteri:** ASP.NET Core solution'ı yazılıyor, çalışıyor, test ediliyor, debug ediliyor; async metotlarda step doğru ilerliyor.
 
 ### Faz 3: Go (3 hafta)
 
-- [ ] gopls entegrasyonu; `go.mod`/`go.work` → modüller
-- [ ] `go build`/`go run` run configuration'ı
+- [x] gopls entegrasyonu; `go.mod`/`go.work` → modüller
+  - Yazıldı (10 Kasım 2026, ReStudio-langs a29be74), derlendi, test edilmedi: `go.work` `use` dizinleri content root olur; `modules.txt`'li `vendor/` exclude edilir.
+- [x] `go build`/`go run` run configuration'ı
+  - Yazıldı (10 Kasım 2026, ReStudio-langs a29be74), derlendi, test edilmedi: Yeni "Go Application" tipi `go build` ile çalıştırır; `file.go:line` link olur. Debug Delve ile kalır.
 - [x] `go test -json` ile test penceresi ve gutter ikonları
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `go/test/` dosyaları ve `GoLineMarkerProvider`.
 - [x] Delve (`dlv dap`) ile debug
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `DelveDescriptorFactory.kt`, `GoLaunches.kt`.
-- [ ] `gofmt`/`goimports` formatlama (gopls üzerinden)
+- [x] `gofmt`/`goimports` formatlama (gopls üzerinden)
+  - Yazıldı (10 Kasım 2026, ReStudio-langs a29be74), derlendi, test edilmedi: Kaydederken gopls `source.organizeImports`; Optimize Imports da çalışır.
 
 **Bitti kriteri:** `go.work` kullanan çok paketli bir Go servisi çalışıyor, test ve debug ediliyor.
 
 ### Faz 4: Frontend (4-5 hafta)
 
-- [ ] TS/JS için vtsls; TS 7 projelerinde projenin kendi `tsc --lsp` server'ı. HTML, CSS, JSON için vscode-langservers-extracted
+- [x] TS/JS için vtsls; TS 7 projelerinde projenin kendi `tsc --lsp` server'ı. HTML, CSS, JSON için vscode-langservers-extracted
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 87b9118), derlendi, test edilmedi: HTML, CSS, JSON server'ları; TypeScript 7 projesinde `tsc --lsp` (Vue projesi vtsls'de kalır).
 - [x] Vue LS: `tsserver/request` mesajlarını `@vue/typescript-plugin` yüklü vtsls'ye köprüle (Faz 0 bulgusu). Angular LS, Tailwind CSS LS
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `web/lsp/VueBridge.kt`, `AngularServerFactory`, `TailwindServerFactory`. JSX'te Tailwind açık.
 - [x] ESLint LS ve Prettier ile formatlama
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `web/lsp/EslintSupport.kt`, `web/ide/PrettierFormattingService.kt`.
-- [ ] `package.json` script'leri için run configuration (npm, pnpm, yarn, bun); `node_modules/.bin` çözümü
-- [ ] vscode-js-debug ile Node ve Chrome debug
-- [ ] Vitest/Jest sonuçlarını test penceresine bağlama
+- [x] `package.json` script'leri için run configuration (npm, pnpm, yarn, bun); `node_modules/.bin` çözümü
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 87b9118), derlendi, test edilmedi: `node_modules/.bin` PATH'te ilk sırada.
+- [x] vscode-js-debug ile Node ve Chrome debug
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 87b9118), derlendi, test edilmedi: "Chrome (js-debug)" run configuration'ı. Gutter'dan üretilmiyor.
+- [x] Vitest/Jest sonuçlarını test penceresine bağlama
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 87b9118), derlendi, test edilmedi: Jest run configuration'ı, gutter ve TeamCity reporter'ı.
 
 - İlk dilim (9 Kasım 2026): `web` plugin'i. vtsls (TS/JS), Angular LS ve Tailwind LS (sadece o projelerde, document matcher ile), `package.json` script'leri için ▶ (Run paket yöneticisiyle, Debug js-debug ile), Vitest için ▶ (Run canlı test ağacı, Debug js-debug ile). Fork IDE'sinde elle denendi: vtsls hover ve completion, `npm run dev`, Vitest Run ve Debug çalışıyor.
   - js-debug her Node sürecini `startDebugging` ile alt oturum olarak açıyor; LSP4IJ bunu destekliyor (probe: js-debug-npm, js-debug-vitest).
@@ -298,10 +315,14 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 
 ### Faz 5: PHP (3 hafta)
 
-- [ ] Phpactor entegrasyonu; Intelephense kullanıcı isterse opsiyonel
-- [ ] `composer.json` → autoload ve kaynak kökleri
-- [ ] PHP script, built-in server ve `artisan` run configuration'ları
-- [ ] PHPUnit/Pest: JUnit XML çıktısıyla test penceresi
+- [x] Phpactor entegrasyonu; Intelephense kullanıcı isterse opsiyonel
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 08eb06c), derlendi, test edilmedi: Ayarla Phpactor ya da Intelephense; server ID `restudio.php`. `vendor/` içine rename düzenlemeleri atılır.
+- [x] `composer.json` → autoload ve kaynak kökleri
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 08eb06c), derlendi, test edilmedi: psr-4, psr-0 ve classmap kaynak ve test kökü olur; `vendor/` exclude edilir ve library olarak eklenir.
+- [x] PHP script, built-in server ve `artisan` run configuration'ları
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 08eb06c), derlendi, test edilmedi: `php -S` (Xdebug ile Debug) ve `artisan` run configuration'ları. `artisan serve` Debug'ı web isteklerinde durmaz.
+- [x] PHPUnit/Pest: JUnit XML çıktısıyla test penceresi
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 08eb06c), derlendi, test edilmedi: Pest run configuration'ı, gutter ve locator. PHPUnit JUnit XML yerine `--teamcity` kullanıyor.
 - [x] Xdebug: vscode-php-debug adaptörüyle debug
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `PhpDebugDescriptorFactory.kt`; `PhpLaunches.kt` `-dxdebug.*` argümanlarını veriyor.
 
