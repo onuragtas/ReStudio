@@ -9,6 +9,8 @@
                         serviceImplementation="com.intellij.openapi.updateSettings.base.ShowWhatIsNewPageAfterUpdateCustomization"
                         overrides="true"/>
 
+    <errorHandler implementation="com.intellij.idea.customization.base.ReStudioErrorReportSubmitter" order="first"/>
+
     <applicationService serviceInterface="com.intellij.platform.ide.customization.ExternalProductResourceUrls"
                         serviceImplementation="com.intellij.idea.customization.base.ReStudioExternalResourceUrls"
                         overrides="true"/>

@@ -43,4 +43,11 @@ class ReStudioBrandingTest {
       assertThat(resources.resolve(image)).exists()
     }
   }
+
+  @Test
+  fun `the ReStudio error report submitter comes before the JetBrains submitter`() {
+    val descriptor = Files.readString(communityHome.resolve("idea/customization/base/resources/intellij.idea.customization.base.xml"))
+
+    assertThat(descriptor).contains("""<errorHandler implementation="com.intellij.idea.customization.base.ReStudioErrorReportSubmitter" order="first"/>""")
+  }
 }

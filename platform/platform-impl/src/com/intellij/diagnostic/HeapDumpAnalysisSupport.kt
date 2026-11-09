@@ -61,7 +61,8 @@ internal class HeapDumpAnalysisSupport {
     val text = getHeapDumpReportText(reportText, heapReportProperties)
     val attachment = Attachment("report.txt", text).apply { isIncluded = true }
     val event = IdeaLoggingEvent(messageText, OutOfMemoryError(), listOf(attachment), null as ProblematicPluginInfo?, null, UnhandledExceptionKind.HANDLED)
-    ErrorReportSubmitter.EP_NAME.findExtension(ITNReporter::class.java)?.submit(arrayOf(event), null, parentComponent) { }
+    // ReStudio: the first assignable submitter, so that a submitter with order="first" can replace ITNReporter
+    ErrorReportSubmitter.EP_NAME.findFirstAssignableExtension(ITNReporter::class.java)?.submit(arrayOf(event), null, parentComponent) { }
 
     LifecycleUsageTriggerCollector.onMemoryReportSubmitted(automaticReport)
   }
