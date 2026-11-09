@@ -158,9 +158,57 @@ jobs:
           suffix: -aarch64.dmg
           artifacts_dir: .
 
+  smoke-test:
+    needs: distributions
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: linux
+            runner: ubuntu-latest
+            artifact: linux.tar.gz-unsigned
+          - os: windows
+            runner: windows-latest
+            artifact: windows.exe-unsigned
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          sparse-checkout: fork
+
+      - name: Download the installer
+        uses: actions/download-artifact@v7.0.0
+        with:
+          name: ${{ matrix.artifact }}
+          path: installer
+
+      - name: Start the IDE on Linux
+        if: matrix.os == 'linux'
+        shell: bash
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q xvfb
+          mkdir ide
+          tar -xzf installer/*.SNAPSHOT.tar.gz -C ide --strip-components 1
+          fork/smoke-test.sh xvfb-run -a ide/bin/idea.sh
+
+      - name: Install the IDE on Windows
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem installer -Filter *.SNAPSHOT.exe | Select-Object -First 1
+          Start-Process -Wait -FilePath $installer.FullName -ArgumentList '/S', '/D=C:\ReStudio'
+          Get-ChildItem C:\ReStudio, C:\ReStudio\restudio-plugins
+
+      - name: Start the IDE on Windows
+        if: matrix.os == 'windows'
+        shell: bash
+        run: fork/smoke-test.sh /c/ReStudio/bin/idea64.exe
+
   release:
     runs-on: ubuntu-latest
-    needs: [distributions, dmg]
+    needs: [distributions, dmg, smoke-test]
     if: github.event_name == 'push' || inputs.tag != ''
     steps:
       - name: Download the installers
