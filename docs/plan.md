@@ -348,6 +348,11 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Upstream workflow sadece Apple Silicon (aarch64) `.dmg`'yi yüklüyor. Yerel build Intel `.dmg`'yi de üretiyor; Intel Mac gerekiyorsa workflow'a onun yükleme adımı eklenmeli.
   - Upstream'in günlük `schedule` tetikleyicisi fork'ta gereksiz dakika harcar; fork'ta kapalı kalsın.
   - 9 Kasım 2026: `fork-release.yml` build'den önce `fork/fetch-bundled-plugins.sh`'ı çalıştırıyor. Build'den sonra her Linux `tar.gz`'de Dart, Flutter, LSP4IJ ve Python dizinlerini arıyor; biri yoksa release durur. Kontrol yerel arşivlerde geçti. CI'da henüz çalışmadı.
+- [ ] Mac'te yerel release (istek: Onur, 10 Kasım 2026). Skill: `.claude/skills/restudio-release/SKILL.md`. Mac, Linux `.tar.gz`, macOS `.sit` ve `.dmg`'yi tek build'de üretir ve `fork/publish-release.sh` ile yayınlar.
+  - CI ve yerel release aynı script'leri kullanır: `fork/next-build-number.sh`, `fork/check-bundled-plugins.sh`, `fork/publish-release.sh`.
+  - Build numarası yayındaki `updates.xml`'den yüksek olur. CI'da en az 1000 + run numarası olur.
+  - Yerel release tag'i oluşturunca `fork-release.yml` başlar. Yeni `guard` job'ı release'i bulur ve build'i atlar.
+  - Mac, Linux smoke testini çalıştıramaz. Yerel release'te sadece macOS smoke testi çalışır.
 - [ ] IDE içinden otomatik güncelleme ("Update and Restart"), yama dosyalarıyla. Sıra (karar: Onur, 9 Kasım 2026): `v0.1.0` yamasız çıkar; yama ikinci release'te eklenir ve denenir.
   - `ReStudioExternalResourceUrls.basePatchDownloadUrl` → `releases/download/update-metadata/`. IDE yamayı `IC-<eski>-<yeni>-patch[-aarch64]-<os>.jar` adıyla bu adreste arar (`computePatchUrl`).
   - Release job'ı önceki release'in Linux ve macOS dağıtımlarını indirir, açar ve `updater` (`updater/src/com/intellij/updater/Runner.java`, `create` komutu) ile her OS ve mimari için yama üretir. Yamalar `update-metadata` release'ine yüklenir.
@@ -357,7 +362,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] CI build süresini kısalt. Ölçüm (run 42620657587, `distributions` job'ı 57 dakika):
   - Bazel analiz 3 dk, Bazel derleme 24 dk (6535 action, cache yok).
   - Paketleme 22 dk. Bunun 16-18 dakikası Windows NSIS `.exe` sıkıştırması (`SetCompressor lzma`); x64 ve aarch64 aynı anda çalışır. Linux 3 dk, macOS 2 dk, traverseUI 1 dk.
-  - Yapıldı (9 Kasım 2026): Seçenek 1'in disk cache kısmı. `fork-release.yml` container'ın `~/.cache` dizinini `$RUNNER_TEMP/ide-cache`'e bağlar ve `JetBrains/monorepo-bazel-cache`'i `actions/cache` ile saklar. Repository cache (indirmeler, yerelde 7,4 GB) sınıra sığmadığı için dışarıda. İlk run (42690626069) cache'i doldurdu: CI'daki disk cache 3,1 GB, kayıt 16 sn sürdü. Kazanç ikinci run'da ölçülecek.
+  - Yapıldı (9 Kasım 2026): Seçenek 1'in disk cache kısmı. `fork-release.yml` container'ın `~/.cache` dizinini `$RUNNER_TEMP/ide-cache`'e bağlar ve `JetBrains/monorepo-bazel-cache`'i `actions/cache` ile saklar. Repository cache (indirmeler, yerelde 7,4 GB) sınıra sığmadığı için dışarıda. İlk run (42690626069) cache'i doldurdu: CI'daki disk cache 3,1 GB, kayıt 16 sn sürdü. İkinci run (42699952867) cache'i 19 sn'de geri yükledi. Build adımı 40,5 dk'dan 11,3 dk'ya, `distributions` job'ı 46 dk'dan yaklaşık 20 dk'ya indi.
   - Seçenek 1: Bazel disk ve repository cache'ini `actions/cache` ile run'lar arasında sakla. Fork commit'lerinde derleme büyük ölçüde atlanır; upstream merge sonrası tam derleme olur. Önce cache boyutu ölçülmeli (GitHub cache sınırı repo başına 10 GB; yereldeki repository cache 7,4 GB).
   - Seçenek 2: Tag'siz test run'larında NSIS `zlib` kullansın, release'te `lzma` kalsın (`idea.nsi`'de `$%RESTUDIO_NSIS_COMPRESSOR%` ile; JetBrains dosyasında 3-4 satır). Tahmini kazanç 10 dk; test installer'ı daha büyük olur.
   - Seçenek 3: Daha büyük GitHub runner (ücretli, dakika başına).

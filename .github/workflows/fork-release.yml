@@ -29,7 +29,29 @@ env:
   ARTIFACTS_DIR: out/idea-ce/artifacts
 
 jobs:
+  # A local release (.claude/skills/restudio-release) creates the tag with the release. The tag push then starts
+  # this workflow. This job stops the workflow, because the release exists already.
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.check.outputs.build }}
+    steps:
+      - id: check
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+        run: |
+          if [ -n "$TAG" ] && gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "The release $TAG exists. The workflow builds nothing."
+            echo "build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+
   distributions:
+    needs: guard
+    if: needs.guard.outputs.build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     outputs:
@@ -67,14 +89,11 @@ jobs:
       - name: Read the upstream base
         id: base
         shell: bash
-        # The build number is the branch and the build of the upstream base, then 1000 + the run number.
-        # The IDE shows an update only for a higher build number. A build without a number is a SNAPSHOT build,
-        # and the IDE never shows an update for it.
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          tag=$(tr -d '[:space:]' < fork/UPSTREAM_BASE)
-          version=${tag#idea/}
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          echo "build=$(cut -d. -f1-2 <<< "$version").$((1000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_OUTPUT"
+          echo "tag=$(tr -d '[:space:]' < fork/UPSTREAM_BASE)" >> "$GITHUB_OUTPUT"
+          echo "build=$(fork/next-build-number.sh "$GITHUB_REPOSITORY")" >> "$GITHUB_OUTPUT"
 
       - name: Checkout JetBrains/android at the upstream base
         uses: actions/checkout@v6.0.2
@@ -118,18 +137,7 @@ jobs:
 
       - name: Check the bundled plugins
         shell: bash
-        # Stops the release if the Linux archive has no path plugins or no Python plugin.
-        run: |
-          for archive in "$ARTIFACTS_DIR"/*.tar.gz; do
-            contents=$(tar -tzf "$archive")
-            for entry in restudio-plugins/Dart/ restudio-plugins/flutter-intellij/ restudio-plugins/lsp4ij/ plugins/python-ce/; do
-              if ! grep -q "/$entry" <<< "$contents"; then
-                echo "$archive has no $entry" >&2
-                exit 1
-              fi
-            done
-            echo "$archive has the bundled plugins"
-          done
+        run: fork/check-bundled-plugins.sh "$ARTIFACTS_DIR"/*.tar.gz
 
       - name: Upload Linux
         uses: ./.github/actions/fork-upload
@@ -220,43 +228,12 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Publish the release
+      - name: Publish the release and the update metadata
         shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
-        run: |
-          ls -l dist
-          notes=$(cat <<'EOF'
-          Unsigned preview build of ReStudio.
-
-          macOS: the app is not signed or notarized. Gatekeeper blocks it at the first start. Remove the quarantine flag once:
-
-              xattr -dr com.apple.quarantine /Applications/ReStudio.app
-
-          Each installer has a .sha256 file next to it.
-          EOF
-          )
-          gh release create "$TAG" dist/* \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
-            --title "ReStudio ${TAG#restudio/}" \
-            --notes "$notes" \
-            --prerelease
-
-      - name: Publish the update metadata
-        shell: bash
-        # The IDE reads updates.xml from the update-metadata release (ReStudioBranding.UPDATES_URL in build/src).
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
           BUILD: ${{ needs.distributions.outputs.build }}
         run: |
-          fork/make-updates-xml.sh "$BUILD" "${TAG#restudio/v}" \
-            "https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" > updates.xml
-          cat updates.xml
-          if ! gh release view update-metadata --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
-            gh release create update-metadata --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-              --title "Update metadata" --notes "ReStudio reads updates.xml from this release. Do not delete it." --prerelease
-          fi
-          gh release upload update-metadata updates.xml --repo "$GITHUB_REPOSITORY" --clobber
+          ls -l dist
+          fork/publish-release.sh "$GITHUB_REPOSITORY" "$TAG" "$GITHUB_SHA" "$BUILD" dist/*
