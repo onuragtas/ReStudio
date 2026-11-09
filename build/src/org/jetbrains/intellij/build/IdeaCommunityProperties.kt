@@ -126,6 +126,13 @@ open class IdeaCommunityProperties(private val communityHomeDir: Path) : JetBrai
   override val baseFileName: String
     get() = "idea"
 
+  /** ReStudio: see [ReStudioPlugins]. */
+  override fun getAdditionalPluginPaths(context: BuildContext): List<Path> = ReStudioPlugins.bundledPluginPaths(communityHomeDir)
+
+  /** ReStudio: see [ReStudioPlugins]. */
+  override fun getAdditionalContextDependentIdeJvmArguments(applicationInfoOf: (ProductProperties) -> ApplicationInfoProperties): List<String> =
+    super.getAdditionalContextDependentIdeJvmArguments(applicationInfoOf) + ReStudioPlugins.jvmArguments(communityHomeDir)
+
   override fun getProductContentDescriptor(): ProductModulesContentSpec = productModules {
     include(intellijCommunityBaseFragment(platformPrefix))
   }
@@ -142,6 +149,7 @@ open class IdeaCommunityProperties(private val communityHomeDir: Path) : JetBrai
     )
 
     bundleExternalPlugins(context, targetDir)
+    ReStudioPlugins.copyPathPlugins(communityHomeDir, targetDir)
   }
 
   protected open fun bundleExternalPlugins(context: BuildContext, targetDirectory: Path) {}

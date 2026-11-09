@@ -50,7 +50,8 @@ Her sync PR'ı merge edilmeden önce:
 
 | Dosya | Neden | Eklendiği sync |
 |---|---|---|
-| _(henüz yok)_ | | |
+| `build/src/org/jetbrains/intellij/build/IdeaCommunityProperties.kt` | Üç çağrı `ReStudioPlugins`'e gider (fork dosyası, aynı dizinde): `getAdditionalPluginPaths`, `getAdditionalContextDependentIdeJvmArguments` ve `copyAdditionalFiles` içindeki bir satır. `out/restudio-plugins` yoksa build upstream ile aynıdır. | — (ilk fork değişikliği) |
+| `platform/build-scripts/src/org/jetbrains/intellij/build/impl/productInfo/ProductLaunchRenderer.kt` | `IDE_HOME_PLACEHOLDER` sabiti ve bir satır: ek JVM argümanlarındaki yer tutucuyu işletim sisteminin IDE dizini makrosuyla değiştirir. `-Dplugin.path` buna ihtiyaç duyar. | — (ilk fork değişikliği) |
 
 ## Yeni sürüm serisine geçiş
 

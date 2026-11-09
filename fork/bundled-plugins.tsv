@@ -1,0 +1,12 @@
+# Plugins that the ReStudio build puts into the IDE. fork/fetch-bundled-plugins.sh reads this file.
+# Columns: plugin ID, JetBrains Marketplace update ID, version, SHA-256 of the zip, license, load mode.
+# Load mode "bundled": the IDE loads the plugin as a bundled plugin.
+# Load mode "path": the IDE loads the plugin through the plugin.path property, as a plugin that is not bundled.
+# Use "path" for a legacy plugin (only <depends> tags) from a vendor other than JetBrains. The platform adds its
+# compatibility dependencies only to such a plugin when it is not bundled. See ReStudioPlugins in build/src.
+# Each update must be compatible with the build in fork/UPSTREAM_BASE. Check it with
+# https://plugins.jetbrains.com/pluginManager?action=download&id=<plugin ID>&build=IC-<build>
+Dart	1212339	511.0.0	3c96609978476b489fb0b6704e0c9899a28eec594f09f1da16b2ada68224abaa	Apache-2.0	path
+io.flutter	1212341	98.0.0	1d5f09a8b17ddf95bb89c6fa9835deb6f0dc89a5ac7d95c1b472c429bcecc65e	BSD-3-Clause	path
+PythonCore	1212274	263.7307.200	996f7d28f640692610150b84cb2f86f9304e91c584e3c6035e4f7337a90e3dda	Apache-2.0	bundled
+com.redhat.devtools.lsp4ij	1157565	0.21.0	2ed125cc36620545c226186587d36ca4a8fc7c3db85e1ee5dfe0946b973e6caa	EPL-2.0	path

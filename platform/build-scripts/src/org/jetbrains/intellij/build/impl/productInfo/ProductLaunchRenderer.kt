@@ -8,6 +8,13 @@ import org.jetbrains.intellij.build.impl.PlatformJarNames.PLATFORM_CORE_NIO_FS
 import org.jetbrains.intellij.build.impl.moduleRepository.MODULE_DESCRIPTORS_COMPACT_PATH
 
 /**
+ * ReStudio: an argument of [ProductJvmArguments.additional] can hold this text.
+ * [renderAdditionalJvmArguments] replaces it with the home macro of the operating system.
+ */
+@ApiStatus.Internal
+const val IDE_HOME_PLACEHOLDER: String = "__IDE_HOME__"
+
+/**
  * The JVM arguments of [jvm] for [os] and [arch], as `BuildContext.getAdditionalJvmArguments` states them.
  *
  * [openedPackages] are the `--add-opens` lines of [os]. [isScript] quotes the arguments that hold a path macro.
@@ -78,7 +85,7 @@ fun renderAdditionalJvmArguments(
     result.add("-Didea.platform.prefix=$it")
   }
 
-  result.addAll(jvm.additional)
+  result.addAll(jvm.additional.map { if (IDE_HOME_PLACEHOLDER in it) it.replace(IDE_HOME_PLACEHOLDER, macroName).quoteIfNeeded() else it })
 
   if (jvm.splash) {
     @Suppress("SpellCheckingInspection", "RedundantSuppression")
