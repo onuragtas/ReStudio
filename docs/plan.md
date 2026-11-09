@@ -245,6 +245,8 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [x] New Project sihirbazı: her dil kendi proje şablonunu versin (istek: Onur, 10 Kasım 2026). Python, Dart ve Flutter kendi kayıtlarını yapıyor. ReStudio-langs'teki dört modülün hiçbiri `moduleBuilder` ya da `newProjectWizard.*` kaydetmiyor; bu yüzden Go, .NET, PHP ve web dilleri sihirbazda yok.
   - Yazıldı (10 Kasım 2026, ReStudio-langs a29be74, 4a23591, 87b9118, 08eb06c), derlendi, test edilmedi: Go (`go mod init`), .NET (console, classlib, xunit), web (Vite React/Vue/vanilla, Node.js) ve PHP (Composer, Laravel) generator'ları `newProjectWizard.generator` ile kayıtlı.
 
+- Test (10 Kasım 2026, ReStudio-langs dfa2265): `./gradlew test` 72 testin hepsini geçti (Go 21, .NET 25, web 18, PHP 8). İlk çalıştırmada 32 test düştü: core'un `messages/CoreBundle.properties` dosyası platformun aynı adlı dosyasını gizliyordu; ad `ReStudioCoreBundle` oldu. Fork build'i (263.7307) beş plugin ve LSP4IJ ile Go projesini açtı ve kapattı; log'da `SEVERE` ve plugin uyarısı yok. Elle denenmedi: New Project ekranları, ReStudio Tools ayarları, kurulum bildirimi, status bar widget'ı, NuGet penceresi ve yeni run configuration'lar.
+
 **Bitti kriteri:** Yeni bir dil eklemek = server tanımı + kurulum tarifi + run/debug/test adaptörü; ortak kod tekrar yazılmıyor.
 
 ### Faz 2: C# ve .NET (8-10 hafta)
@@ -395,6 +397,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Mac, Linux smoke testini çalıştıramaz. Yerel release'te sadece macOS smoke testi çalışır.
 - [ ] IDE içinden otomatik güncelleme ("Update and Restart"), yama dosyalarıyla. Sıra (karar: Onur, 9 Kasım 2026): `v0.1.0` yamasız çıkar; yama ikinci release'te eklenir ve denenir.
   - Yazıldı (10 Kasım 2026), denenmedi: `fork/make-patches.sh` önceki release'in `.tar.gz` ve `.sit` dosyalarını indirir ve `updater` (`./gradlew fatJar`) ile `--strict` yama üretir. macOS'ta kök `Contents`. `fork/publish-release.sh` yamaları `update-metadata`'ya yükler; `make-updates-xml.sh` `<patch from size exclusions>` satırını ekler. `basePatchDownloadUrl` artık `releases/download/update-metadata/`.
+  - Denendi (10 Kasım 2026): CI Linux build 1009'dan 1010'a yama 15 sn'de üretildi (2,3 MB). Yama 1009'a uygulandı; sonuç 1010 ile bayt bayt aynı. Updater Gradle 8.5 kullanıyor, Java 25'te çalışmıyor; Java 21 gerekli. Script'in kendisi yayında bir release olmadığı için uçtan uca denenmedi.
   - `ReStudioExternalResourceUrls.basePatchDownloadUrl` → `releases/download/update-metadata/`. IDE yamayı `IC-<eski>-<yeni>-patch[-aarch64]-<os>.jar` adıyla bu adreste arar (`computePatchUrl`).
   - Release job'ı önceki release'in Linux ve macOS dağıtımlarını indirir, açar ve `updater` (`updater/src/com/intellij/updater/Runner.java`, `create` komutu) ile her OS ve mimari için yama üretir. Yamalar `update-metadata` release'ine yüklenir.
   - `fork/make-updates-xml.sh` `<patch from="<eski build>" size="..."/>` satırlarını ekler.
