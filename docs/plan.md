@@ -347,6 +347,19 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Upstream workflow sadece Apple Silicon (aarch64) `.dmg`'yi yüklüyor. Yerel build Intel `.dmg`'yi de üretiyor; Intel Mac gerekiyorsa workflow'a onun yükleme adımı eklenmeli.
   - Upstream'in günlük `schedule` tetikleyicisi fork'ta gereksiz dakika harcar; fork'ta kapalı kalsın.
   - 9 Kasım 2026: `fork-release.yml` build'den önce `fork/fetch-bundled-plugins.sh`'ı çalıştırıyor. Build'den sonra her Linux `tar.gz`'de Dart, Flutter, LSP4IJ ve Python dizinlerini arıyor; biri yoksa release durur. Kontrol yerel arşivlerde geçti. CI'da henüz çalışmadı.
+- [ ] IDE içinden otomatik güncelleme ("Update and Restart"), yama dosyalarıyla. Sıra (karar: Onur, 9 Kasım 2026): `v0.1.0` yamasız çıkar; yama ikinci release'te eklenir ve denenir.
+  - `ReStudioExternalResourceUrls.basePatchDownloadUrl` → `releases/download/update-metadata/`. IDE yamayı `IC-<eski>-<yeni>-patch[-aarch64]-<os>.jar` adıyla bu adreste arar (`computePatchUrl`).
+  - Release job'ı önceki release'in Linux, Windows ve macOS dağıtımlarını indirir, açar ve `updater` (`updater/src/com/intellij/updater/Runner.java`, `create` komutu) ile her OS ve mimari için yama üretir. Yamalar `update-metadata` release'ine yüklenir.
+  - `fork/make-updates-xml.sh` `<patch from="<eski build>" size="..."/>` satırlarını ekler.
+  - Yama sadece önceki sürümden geçerli; daha eski sürümler "Download" ile tam installer alır.
+  - Denenecek: Windows'ta `Program Files` altında yönetici izni; macOS imzası eklendikten sonra yamanın imzalı dosyaları taşıması.
+- [ ] CI build süresini kısalt. Ölçüm (run 42620657587, `distributions` job'ı 57 dakika):
+  - Bazel analiz 3 dk, Bazel derleme 24 dk (6535 action, cache yok).
+  - Paketleme 22 dk. Bunun 16-18 dakikası Windows NSIS `.exe` sıkıştırması (`SetCompressor lzma`); x64 ve aarch64 aynı anda çalışır. Linux 3 dk, macOS 2 dk, traverseUI 1 dk.
+  - Seçenek 1: Bazel disk ve repository cache'ini `actions/cache` ile run'lar arasında sakla. Fork commit'lerinde derleme büyük ölçüde atlanır; upstream merge sonrası tam derleme olur. Önce cache boyutu ölçülmeli (GitHub cache sınırı repo başına 10 GB; yereldeki repository cache 7,4 GB).
+  - Seçenek 2: Tag'siz test run'larında NSIS `zlib` kullansın, release'te `lzma` kalsın (`idea.nsi`'de `$%RESTUDIO_NSIS_COMPRESSOR%` ile; JetBrains dosyasında 3-4 satır). Tahmini kazanç 10 dk; test installer'ı daha büyük olur.
+  - Seçenek 3: Daha büyük GitHub runner (ücretli, dakika başına).
+  - `intellij.build.target.arch` tek bir değer alır; sadece Windows aarch64'ü atlamak mümkün değil.
 - [ ] (En sona bırakıldı, 9 Kasım 2026) macOS imzalama ve notarization (yapılmazsa README'de Gatekeeper notu: `xattr -dr com.apple.quarantine`). İmza için Apple Developer ID sertifikası ve notarization bilgileri GitHub secret olarak eklenmeli.
 - [x] `LICENSE` (Apache 2.0), `NOTICE` ve üçüncü taraf lisans listesi
   - Kökteki `LICENSE.txt` Apache 2.0 değil: JetBrains, Haziran 2026'da onu kendi build'lerinin kullanım koşullarıyla değiştirdi. IDE'ye `fork/legal/LICENSE.txt` (Apache 2.0) ve `fork/legal/NOTICE.txt` giriyor. Üçüncü taraf kütüphane listesi build'in `license/third-party-libraries.json` dosyası.
