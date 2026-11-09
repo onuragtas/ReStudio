@@ -92,12 +92,29 @@ jobs:
         shell: bash
         run: docker build . --target intellij_idea --tag intellij_idea
 
+      # The Bazel disk cache keeps the compiled modules between runs. Without it, each run compiles for 24 minutes.
+      # The key changes with each commit, so each successful run saves a new entry. The restore takes the newest
+      # entry of the same upstream base. GitHub removes the oldest entries above 10 GB.
+      - name: Restore the Bazel disk cache
+        uses: actions/cache@v6.1.0
+        with:
+          path: ${{ runner.temp }}/ide-cache/JetBrains/monorepo-bazel-cache
+          key: bazel-disk-${{ runner.os }}-${{ hashFiles('fork/UPSTREAM_BASE') }}-${{ github.sha }}
+          restore-keys: |
+            bazel-disk-${{ runner.os }}-${{ hashFiles('fork/UPSTREAM_BASE') }}-
+            bazel-disk-${{ runner.os }}-
+
       - name: Build
         shell: bash
         # ReStudio has no Windows distribution (decision of 9 November 2026). The Windows installer step took 16-18 minutes.
         run: |
-          docker run --rm --user "$(id -u)" --volume "${PWD}:/community" intellij_idea \
+          mkdir -p "$RUNNER_TEMP/ide-cache"
+          docker run --rm --user "$(id -u)" --volume "${PWD}:/community" --volume "$RUNNER_TEMP/ide-cache:/home/ide_builder/.cache" intellij_idea \
             -Dbuild.number=${{ steps.base.outputs.build }} -Dintellij.build.skip.build.steps=windows_artifacts
+
+      - name: Show the cache size
+        shell: bash
+        run: du -sh "$RUNNER_TEMP"/ide-cache/JetBrains/* || true
 
       - name: Check the bundled plugins
         shell: bash

@@ -357,6 +357,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] CI build süresini kısalt. Ölçüm (run 42620657587, `distributions` job'ı 57 dakika):
   - Bazel analiz 3 dk, Bazel derleme 24 dk (6535 action, cache yok).
   - Paketleme 22 dk. Bunun 16-18 dakikası Windows NSIS `.exe` sıkıştırması (`SetCompressor lzma`); x64 ve aarch64 aynı anda çalışır. Linux 3 dk, macOS 2 dk, traverseUI 1 dk.
+  - Yapıldı (9 Kasım 2026), denenmedi: Seçenek 1'in disk cache kısmı. `fork-release.yml` container'ın `~/.cache` dizinini `$RUNNER_TEMP/ide-cache`'e bağlar ve `JetBrains/monorepo-bazel-cache`'i `actions/cache` ile saklar. Repository cache (indirmeler, yerelde 7,4 GB) sınıra sığmadığı için dışarıda. Yereldeki disk cache 4,8 GB. İlk run cache'i doldurur; kazanç ikinci run'da görülür. "Show the cache size" adımı boyutu yazar.
   - Seçenek 1: Bazel disk ve repository cache'ini `actions/cache` ile run'lar arasında sakla. Fork commit'lerinde derleme büyük ölçüde atlanır; upstream merge sonrası tam derleme olur. Önce cache boyutu ölçülmeli (GitHub cache sınırı repo başına 10 GB; yereldeki repository cache 7,4 GB).
   - Seçenek 2: Tag'siz test run'larında NSIS `zlib` kullansın, release'te `lzma` kalsın (`idea.nsi`'de `$%RESTUDIO_NSIS_COMPRESSOR%` ile; JetBrains dosyasında 3-4 satır). Tahmini kazanç 10 dk; test installer'ı daha büyük olur.
   - Seçenek 3: Daha büyük GitHub runner (ücretli, dakika başına).
