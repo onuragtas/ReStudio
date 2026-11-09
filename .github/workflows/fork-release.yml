@@ -74,6 +74,11 @@ jobs:
           path: android
           ref: refs/tags/${{ steps.base.outputs.tag }}
 
+      - name: Fetch the bundled plugins
+        shell: bash
+        # The build reads out/restudio-plugins. Without it, the installers have no Dart, Flutter, Python and LSP4IJ.
+        run: fork/fetch-bundled-plugins.sh
+
       - name: Build environment
         shell: bash
         run: docker build . --target intellij_idea --tag intellij_idea
@@ -81,6 +86,21 @@ jobs:
       - name: Build
         shell: bash
         run: docker run --rm --user "$(id -u)" --volume "${PWD}:/community" intellij_idea
+
+      - name: Check the bundled plugins
+        shell: bash
+        # Stops the release if the Linux archive has no path plugins or no Python plugin.
+        run: |
+          for archive in "$ARTIFACTS_DIR"/*.tar.gz; do
+            contents=$(tar -tzf "$archive")
+            for entry in restudio-plugins/Dart/ restudio-plugins/flutter-intellij/ restudio-plugins/lsp4ij/ plugins/python-ce/; do
+              if ! grep -q "/$entry" <<< "$contents"; then
+                echo "$archive has no $entry" >&2
+                exit 1
+              fi
+            done
+            echo "$archive has the bundled plugins"
+          done
 
       - name: Upload Linux
         uses: ./.github/actions/upload_ide
