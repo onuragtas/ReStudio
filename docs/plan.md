@@ -349,7 +349,9 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] Upstream senkron süreci: her JetBrains sürüm tag'ine bir merge; adımlar `docs/upstream-sync.md`'de
 - [x] README: ne olduğu, JetBrains ile bağlantısı olmadığı, desteklenen diller, kurulum
   - `.github/README.md`. GitHub bu dosyayı kökteki README'den önce gösteriyor; böylece upstream README'si değişmiyor ve merge çakışması olmuyor.
-- [ ] Fork'un kökündeki `AGENTS.md`'yi fork'a göre sadeleştir: silinen `.agents/skills/` dosyalarına referanslar kalmasın, fork kuralları (JetBrains koduna dokunma, sadece marka/paketleme) eklensin
+- [x] Fork'un kökündeki `AGENTS.md`'yi fork'a göre sadeleştir: silinen `.agents/skills/` dosyalarına referanslar kalmasın, fork kuralları (JetBrains koduna dokunma, sadece marka/paketleme) eklensin
+  - 9 Kasım 2026: `.agents/skills/` silinmemiş; `AGENTS.md`'nin başvurduğu dosyaların hepsi var. `AGENTS.md` değişmedi.
+  - Fork kuralları `.ai/local.md`'de. `AGENTS.md` bu dosyayı `@./.ai/local.md` ile içe alıyor; upstream'de bu dosya yok, bu yüzden merge çakışması olmaz.
 
 **Bitti kriteri:** GitHub Releases'ta indirilebilir installer var; kurulunca kendi adıyla açılıyor, desteklenen diller hazır geliyor, resmi IntelliJ ile yan yana çalışıyor ve bir upstream merge'ü baştan sona yapılmış.
 
@@ -431,7 +433,8 @@ En büyük risk kapsam: dört dil paketi ve bir fork'un sürekli bakımı tek ki
   - Cevap (9 Kasım 2026): Açık kalıyor. README, Marketplace kullanım koşullarına link veriyor. Koşulların hukuki kontrolü yapılmadı.
 - [x] Bir plugin `.zip`'ini fork'un installer build'ine bundled eklemenin doğru yolu; Faz 6 başında intellij-community build script'lerinden doğrulanacak.
   - Cevap (9 Kasım 2026): JetBrains vendor'lı plugin'ler `getAdditionalPluginPaths` ile `plugins/`'e, diğerleri `-Dplugin.path` ile `restudio-plugins/`'e gider (Faz 6).
-- [ ] Fork reposunda `.agents/skills/` silindi. Bu silme kasıtlı mı? Upstream merge'lerinde bu dosyalar tekrar gelir; her merge'de silmek mi, yoksa tutmak mı daha az çakışma yaratır?
+- [x] Fork reposunda `.agents/skills/` silindi. Bu silme kasıtlı mı? Upstream merge'lerinde bu dosyalar tekrar gelir; her merge'de silmek mi, yoksa tutmak mı daha az çakışma yaratır?
+  - Cevap (9 Kasım 2026): Silinmemiş. `main`'de `.agents/skills/` upstream ile aynı; bir şey yapmak gerekmiyor.
 
 ## Kaynaklar
 
