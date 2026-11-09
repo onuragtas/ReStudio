@@ -83,7 +83,7 @@ Show the user the tag, the build number, the commit (`git rev-parse --short HEAD
 SIGNED=true fork/publish-release.sh onuragtas/ReStudio "restudio/v<version>" "$(git rev-parse HEAD)" "$build" "$dist"/*
 ```
 
-The script makes the update patches from the published release (`fork/make-patches.sh`), creates the tag and the release, then uploads the patches and `updates.xml` to the `update-metadata` release. The patch step needs Java 11 or later, for example `JAVA_HOME=/opt/homebrew/opt/openjdk@25`, and about 7 GB of free disk.
+The script makes the update patches from the published release (`fork/make-patches.sh`), creates the tag and the release, then uploads the patches and `updates.xml` to the `update-metadata` release. The patch step needs Java 11 to 21, because the updater uses Gradle 8.5. For example `JAVA_HOME=/opt/homebrew/opt/openjdk@21`, and about 7 GB of free disk.
 
 ## 7. Check the result
 

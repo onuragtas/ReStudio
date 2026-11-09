@@ -13,7 +13,7 @@
 # line for each patch. fork/make-updates-xml.sh reads this file.
 #
 # Usage: fork/make-patches.sh <repository> <new build> <dist> <out>
-# Needs: gh, java 11 or later (JAVA_HOME or PATH).
+# Needs: gh, Java 11 to 21 (JAVA_HOME or PATH). The updater uses Gradle 8.5, which does not run on Java 25.
 set -euo pipefail
 
 repository="$1"
