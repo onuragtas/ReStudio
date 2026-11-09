@@ -1,0 +1,31 @@
+ReStudio
+https://github.com/onuragtas/ReStudio
+
+ReStudio is not a JetBrains product. JetBrains s.r.o. does not make, support or endorse it.
+IntelliJ and IntelliJ IDEA are trademarks of JetBrains s.r.o.
+
+ReStudio is a modified build of the IntelliJ Platform open-source code
+(https://github.com/JetBrains/intellij-community).
+That code is Copyright (C) JetBrains s.r.o. and contributors, and the Apache License 2.0 applies to it.
+LICENSE.txt contains the text of the Apache License 2.0.
+The changes of ReStudio are also under the Apache License 2.0.
+
+The IDE contains the third-party libraries of the IntelliJ Platform.
+The file <IDE home>/license/third-party-libraries.json lists them with their licenses.
+
+ReStudio also contains these plugins without changes. Each plugin keeps its own license.
+
+- Dart plugin (Dart), Copyright (C) JetBrains s.r.o. and the Dart project authors.
+  License: Apache License 2.0. Source: https://github.com/JetBrains/intellij-plugins/tree/master/Dart
+
+- Flutter plugin (io.flutter), Copyright (C) The Chromium Authors.
+  License: BSD 3-Clause. Source: https://github.com/flutter/flutter-intellij
+  The Flutter plugin contains JxBrowser by TeamDev Ltd. The JxBrowser license
+  (https://teamdev.com/jxbrowser/) applies to it, not the BSD license.
+
+- Python Community Edition plugin (PythonCore), Copyright (C) JetBrains s.r.o. and contributors.
+  License: Apache License 2.0. Source: https://github.com/JetBrains/intellij-community/tree/master/python
+
+- LSP4IJ (com.redhat.devtools.lsp4ij), Copyright (C) Red Hat, Inc. and contributors.
+  License: Eclipse Public License 2.0 (https://www.eclipse.org/legal/epl-2.0/).
+  Source: https://github.com/redhat-developer/lsp4ij

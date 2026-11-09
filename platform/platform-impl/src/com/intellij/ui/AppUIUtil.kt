@@ -311,7 +311,8 @@ object AppUIUtil {
   @RequiresBackgroundThread(generateAssertion = false /* IJPL-115548 */)
   fun loadConsentsForEditing(): List<Consent> {
     val options = ConsentOptions.getInstance()
-    var result = options.consents.first
+    // ReStudio: a copy, because an empty list of consents is immutable (a vendor without a consents file)
+    var result: MutableList<Consent> = ArrayList(options.consents.first)
     if (options.isEAP) {
       val statConsent = options.defaultUsageStatsConsent
       if (statConsent != null) {

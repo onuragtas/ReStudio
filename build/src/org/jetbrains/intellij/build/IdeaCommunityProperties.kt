@@ -52,7 +52,7 @@ open class IdeaCommunityProperties(private val communityHomeDir: Path) : JetBrai
     buildCrossPlatformDistribution = true
     buildSourcesArchive = true
 
-    imagesDirectoryPath = communityHomeDir.resolve("build/idea-community-images")
+    imagesDirectoryPath = ReStudioBranding.imagesDirectory(communityHomeDir)
 
     productLayout.productImplementationModules = listOf(
       "intellij.platform.starter",
@@ -115,12 +115,12 @@ open class IdeaCommunityProperties(private val communityHomeDir: Path) : JetBrai
     }
 
     versionCheckerConfig = CE_CLASS_VERSIONS
-    baseDownloadUrl = "https://download.jetbrains.com/idea/"
+    baseDownloadUrl = "${ReStudioBranding.RELEASES_URL}/"
     buildDocAuthoringAssets = true
 
     @Suppress("SpellCheckingInspection")
     qodanaProductProperties = QodanaProductProperties("QDJVMC", "Qodana Community for JVM")
-    additionalVmOptions = persistentListOf("-Dllm.show.ai.promotion.window.on.start=false")
+    additionalVmOptions = persistentListOf("-Dllm.show.ai.promotion.window.on.start=false", *ReStudioBranding.VM_OPTIONS.toTypedArray())
   }
 
   override val baseFileName: String
@@ -150,6 +150,7 @@ open class IdeaCommunityProperties(private val communityHomeDir: Path) : JetBrai
 
     bundleExternalPlugins(context, targetDir)
     ReStudioPlugins.copyPathPlugins(communityHomeDir, targetDir)
+    ReStudioBranding.copyLegalFiles(communityHomeDir, targetDir)
   }
 
   protected open fun bundleExternalPlugins(context: BuildContext, targetDirectory: Path) {}
@@ -161,10 +162,10 @@ open class IdeaCommunityProperties(private val communityHomeDir: Path) : JetBrai
   override fun createMacCustomizer(projectHome: Path): MacDistributionCustomizer = ideaCommunityMacCustomizer(communityHomeDir)
 
   override fun getSystemSelector(appInfo: ApplicationInfoProperties, buildNumber: String): String {
-    return "IdeaIC${appInfo.majorVersion}.${appInfo.minorVersionMainPart}"
+    return ReStudioBranding.systemSelector(appInfo)
   }
 
-  override fun getBaseArtifactName(appInfo: ApplicationInfoProperties, buildNumber: String): String = "ideaIC-$buildNumber"
+  override fun getBaseArtifactName(appInfo: ApplicationInfoProperties, buildNumber: String): String = ReStudioBranding.baseArtifactName(buildNumber)
 
   override fun getOutputDirectoryName(appInfo: ApplicationInfoProperties): String = "idea-ce"
 }
@@ -260,12 +261,8 @@ inline fun ideaCommunityWindowsCustomizer(
 ): WindowsDistributionCustomizer = windowsCustomizer(projectHome) {
   fileAssociations = listOf("java", "gradle", "groovy", "kt", "kts", "pom")
 
-  fullName { "IntelliJ IDEA Open Source" }
-  installDirNameHandler { "IntelliJ IDEA OSS" }
-
-  uninstallFeedbackUrl { appInfo ->
-    "https://www.jetbrains.com/idea/uninstall/?edition=IC-${appInfo.majorVersion}.${appInfo.minorVersion}"
-  }
+  fullName { ReStudioBranding.FULL_NAME }
+  installDirNameHandler { ReStudioBranding.DIRECTORY_NAME }
 
   configure()
 }
@@ -274,12 +271,12 @@ inline fun ideaCommunityMacCustomizer(
   projectHome: Path,
   configure: MacCustomizerBuilder.() -> Unit = {},
 ): MacDistributionCustomizer = macCustomizer(projectHome) {
-  urlSchemes = listOf("idea")
+  urlSchemes = listOf(ReStudioBranding.URL_SCHEME)
   associateIpr = true
   fileAssociations = FileAssociation.from("java", "groovy", "kt", "kts")
-  bundleIdentifier = "com.jetbrains.intellij.ce"
+  bundleIdentifier = ReStudioBranding.MAC_BUNDLE_IDENTIFIER
 
-  rootDirectoryName { _, _ -> "IntelliJ IDEA OSS.app" }
+  rootDirectoryName { _, _ -> "${ReStudioBranding.FULL_NAME}.app" }
 
   executableFilePatterns { base, _, _, _ ->
     val kotlinExecutables = KotlinBinaries.kotlinCompilerExecutables
@@ -294,7 +291,7 @@ inline fun ideaCommunityLinuxCustomizer(
   configure: LinuxCustomizerBuilder.() -> Unit = {},
 ): LinuxDistributionCustomizer = linuxCustomizer(projectHome) {
 
-  rootDirectoryName { _, _ -> "idea-oss" }
+  rootDirectoryName { _, _ -> ReStudioBranding.DIRECTORY_NAME }
 
   executableFilePatterns { base, _, _, _, _ ->
     base.plus(KotlinBinaries.kotlinCompilerExecutables).filterNot { it == "plugins/**/*.sh" }

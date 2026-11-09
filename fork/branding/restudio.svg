@@ -1,0 +1,11 @@
+<!-- Copyright 2026 ReStudio contributors. Use of this source code is governed by the Apache 2.0 license. -->
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="restudio_background" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0EA5A4"/>
+      <stop offset="1" stop-color="#4F46E5"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#restudio_background)"/>
+  <path d="M22 48V16H34.5C39.75 16 44 20.03 44 25C44 29.97 39.75 34 34.5 34H22M34 34L44 48" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
