@@ -20,18 +20,24 @@ Fork, JetBrains'in `master` branch'ini takip etmez. Yeni özellik ve düzeltmele
    fork/upstream-sync.sh merge            # serinin en yeni tag'i
    fork/upstream-sync.sh merge idea/263.8000.10   # belirli bir tag
    ```
-   Script tag'i çeker, `main`'den `sync/<build>` branch'ini açar ve merge eder.
-3. **Çakışma varsa:** Script çakışan dosyaları listeler ve durur. Çözün, `git add` yapın, sonra:
+   Script tag'i çeker ve `main`'den `sync/<build>` branch'ini açar. Sonuç, yeni tag'in ağacı ve üstünde fork'un farkıdır (`<taban tag>..main`). Fark `git apply --3way` ile uygulanır. Commit'in iki ebeveyni var: `main` ve tag.
+   - Neden düz `git merge` değil: Yeni bir build hattı (ör. `262.10968` → `262.11879`) önceki tag'in commit'lerini içermez. Merge'ün ortak atası taban tag'den eskidir ve git tag'e özel commit'leri ikinci kez uygular. Deneme (9 Kasım 2026, `upstream/263` branch'i): düz merge 114 çakışma verdi; çakışmaları dosya dosya çözmek de birbirine uymayan dosyalar bıraktı (`EditorsSplitters.kt` derlenmedi). Yeni yöntemde çakışma 0, sonuç upstream'den sadece fork'un 50 dosyasında ayrılıyor.
+   - Aynı build hattındaki tag'ler (ör. `263.7307.112` → `263.7307.200`) birbirinin üstüne kurulur; orada iki yöntem de aynı sonucu verir.
+3. **`android/` klonu:** Build, `android/` dizinini ister ve onu aynı tag'de bekler. Yeni tag bir `android/` modülüne başvurur, eski klonda yoksa Bazel derlemeden önce düşer. `finish` komutu gereken git komutunu yazar. CI, klonu `fork/UPSTREAM_BASE`'deki tag ile kendisi alır.
+4. **Çakışma varsa:** Çakışma sadece fork'un değiştirdiği dosyalarda çıkar. Script bu dosyaları listeler ve durur. Çözün, `git add` yapın, sonra:
    ```
    fork/upstream-sync.sh finish idea/263.8000.10
    ```
    Vazgeçmek için: `fork/upstream-sync.sh abort`.
-4. **Kontroller** (aşağıda) geçince branch'i push edin, `main`'e PR açın, merge edin, issue'yu kapatın.
+5. **API değişiklikleri:** Upstream, fork kodunun kullandığı bir API'yi değiştirebilir. Çakışma olmasa da derleme düşer. Deneme örneği: `renderAdditionalJvmArguments`, `vendorName` ve `pathsSelector`'ı `ProductJvmArguments`'tan alıp parametre yaptı; `ReStudioPluginsTest` güncellenmeliydi. Bu yüzden kontroller derlemeyi ve `ReStudio*` testlerini içerir.
+6. **Kontroller** (aşağıda) geçince branch'i push edin, `main`'e PR açın, merge edin, issue'yu kapatın.
 
 ## Kontroller
 
 Her sync PR'ı merge edilmeden önce:
 
+- [ ] Fork modülleri ve testleri derleniyor: `./bazel.cmd build //build:i_build_target //idea/customization/base:base //platform/platform-impl:ide-impl //platform/core-impl:core-impl` ve `./tests.cmd --module intellij.idea.community.build.tests --test 'org.jetbrains.intellij.build.ReStudio*'`
+- [ ] CI (`fork-release.yml`, tag'siz) sync branch'inde geçiyor; smoke test bundled plugin'leri yüklüyor
 - [ ] IDE kaynaktan derleniyor ve açılıyor (`./installers.cmd -Dintellij.build.target.os=current` veya IDE'deki "IDEA" run configuration'ı)
 - [ ] Marka doğru: ürün adı, ikonlar, About ekranı; "IntelliJ" ve JetBrains logoları görünmüyor
 - [ ] Bundled plugin'ler (dil plugin'leri, Flutter, Dart, Python) yükleniyor; `sinceBuild`/`untilBuild` yeni build ile uyumlu
@@ -43,7 +49,6 @@ Her sync PR'ı merge edilmeden önce:
 
 - Fork'a özel her şey **yeni dosyalarda** durur: `fork/`, `docs/upstream-sync.md`, `.github/workflows/fork-*.yml`, marka kaynakları. Upstream bu yollara dokunmaz.
 - JetBrains dosyası değiştirmek zorunluysa değişikliği küçük tutun ve aşağıdaki "Dokunulan upstream dosyaları" tablosuna ekleyin. Çakışma çıkarsa ilk bakılacak yer burasıdır.
-- Script merge'leri `git rerere` açık çalıştırır. Bir çakışmayı bir kez çözünce, aynı çakışma sonraki merge'lerde otomatik çözülür. Bunun için çözümü `finish` ile commit edin.
 - Merge commit'leri olduğu gibi kalır; `main` üzerinde rebase yapılmaz.
 
 ### Dokunulan upstream dosyaları

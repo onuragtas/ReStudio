@@ -79,6 +79,19 @@ cmd_check() {
   newer_tags "$(current_base)" | tail -1
 }
 
+# The result of a sync is the upstream tree plus the fork changes, and nothing else.
+# A plain `git merge` does not give this result. A new upstream build line does not contain the commits of the
+# previous release tag, so the merge base is older than the base tag. The merge then applies the tag-only commits
+# a second time, and files that depend on each other no longer fit.
+# So the sync takes the upstream tree and applies the fork diff (base tag -> main) with a three-way apply.
+# The commit has two parents, main and the tag, so the history shows the merge.
+apply_fork_onto() {
+  local upstream_ref="$1" base="$2"
+  git merge --no-ff --no-commit -s ours "$upstream_ref" >/dev/null
+  git read-tree --reset -u "$upstream_ref"
+  git diff --binary --full-index "$base" "$MAIN" | git apply --3way --index --whitespace=nowarn
+}
+
 cmd_merge() {
   local tag="${1:-}" base branch
   base="$(current_base)"
@@ -90,8 +103,8 @@ cmd_merge() {
   git rev-parse --verify --quiet "$MAIN" >/dev/null || die "branch $MAIN does not exist."
   git rev-parse --verify --quiet "$branch" >/dev/null && die "branch $branch already exists. Use 'abort' or delete it."
 
-  echo "Fetching $tag from $UPSTREAM..."
-  git fetch --no-tags "$UPSTREAM" "refs/tags/$tag:refs/tags/$tag"
+  echo "Fetching $tag and $base from $UPSTREAM..."
+  git fetch --no-tags "$UPSTREAM" "refs/tags/$tag:refs/tags/$tag" "refs/tags/$base:refs/tags/$base"
 
   if git merge-base --is-ancestor "$tag" "$MAIN"; then
     echo "$tag is already merged into $MAIN."
@@ -99,12 +112,12 @@ cmd_merge() {
   fi
 
   git switch -c "$branch" "$MAIN"
-  echo "Merging $tag into $branch..."
-  if git -c rerere.enabled=true -c rerere.autoupdate=true merge --no-ff --no-commit "$tag"; then
+  echo "Applying the fork changes ($base..$MAIN) onto $tag in $branch..."
+  if apply_fork_onto "$tag" "$base"; then
     cmd_finish "$tag"
   else
     echo
-    echo "Conflicts:"
+    echo "Conflicts in the files that the fork changed:"
     git diff --name-only --diff-filter=U | sed 's/^/  /'
     echo
     echo "Resolve the conflicts, 'git add' the files, then run:"
@@ -113,6 +126,7 @@ cmd_merge() {
     exit 1
   fi
 }
+
 
 cmd_finish() {
   local tag="${1:-}"
@@ -125,8 +139,9 @@ cmd_finish() {
   git -c rerere.enabled=true commit --no-edit -m "fork: merge upstream $tag"
   echo
   echo "Merged $tag on branch $(git branch --show-current). Next steps:"
-  echo "  1. Build and run the IDE (see docs/upstream-sync.md, 'Checks')."
-  echo "  2. Push the branch and open a pull request into $MAIN."
+  echo "  1. Move the android/ checkout to the same tag: git -C android fetch origin refs/tags/$tag && git -C android switch --detach FETCH_HEAD"
+  echo "  2. Build and run the IDE (see docs/upstream-sync.md, 'Checks')."
+  echo "  3. Push the branch and open a pull request into $MAIN."
 }
 
 cmd_abort() {

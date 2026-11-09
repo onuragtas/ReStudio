@@ -367,6 +367,11 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Kökteki `LICENSE.txt` Apache 2.0 değil: JetBrains, Haziran 2026'da onu kendi build'lerinin kullanım koşullarıyla değiştirdi. IDE'ye `fork/legal/LICENSE.txt` (Apache 2.0) ve `fork/legal/NOTICE.txt` giriyor. Üçüncü taraf kütüphane listesi build'in `license/third-party-libraries.json` dosyası.
   - Açık: Flutter plugin'i JxBrowser (TeamDev, ticari lisans) içeriyor. Plugin değişmeden dağıtılıyor ve NOTICE'te yazıyor; dağıtım hakkı ayrıca kontrol edilmeli.
 - [ ] Upstream senkron süreci: her JetBrains sürüm tag'ine bir merge; adımlar `docs/upstream-sync.md`'de
+  - Deneme (9 Kasım 2026): `263` serisinde taban tag'den (`idea/263.7307.200`) yeni bir tag yok. Bu yüzden JetBrains'in `upstream/263` branch'i (534 yeni commit) geçici bir branch'te denendi, sonra silindi.
+  - Düz `git merge` 114 çakışma verdi; fork dosyalarından sadece `IdeaApplicationInfo.xml` çakıştı. Çakışmaları dosya dosya çözmek birbirine uymayan dosyalar bıraktı (`EditorsSplitters.kt` derlenmedi).
+  - `fork/upstream-sync.sh` artık upstream ağacını alıp fork farkını `git apply --3way` ile uyguluyor. Sonuç: 0 çakışma; ağaç upstream'den sadece fork'un 50 dosyasında ayrılıyor. Fork modülleri derlendi.
+  - Bulunan iki elle iş: `android/` klonu aynı tag'e alınmalı; `ReStudioPluginsTest` upstream'in `renderAdditionalJvmArguments` imza değişikliğine uyarlanmalıydı. Uyarlamadan sonra 10 ReStudio testi geçti. İkisi de `docs/upstream-sync.md`'de.
+  - Açık: gerçek bir tag ile `merge` ve `finish` komutları uçtan uca çalıştırılmadı. Yeni tag gelince `fork-upstream-check` issue açar.
 - [x] README: ne olduğu, JetBrains ile bağlantısı olmadığı, desteklenen diller, kurulum
   - `.github/README.md`. GitHub bu dosyayı kökteki README'den önce gösteriyor; böylece upstream README'si değişmiyor ve merge çakışması olmuyor.
 - [x] Fork'un kökündeki `AGENTS.md`'yi fork'a göre sadeleştir: silinen `.agents/skills/` dosyalarına referanslar kalmasın, fork kuralları (JetBrains koduna dokunma, sadece marka/paketleme) eklensin
