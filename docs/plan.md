@@ -314,11 +314,21 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 
 ### Faz 7: Fork, marka ve public dağıtım (3-4 hafta)
 
-- [ ] Ürün adı, ikonlar, splash, About ekranı ve ürün tanım dosyaları; arayüzde ve installer'da "IntelliJ" ve JetBrains logoları kalmasın
-- [ ] Kendi config, cache ve log dizinleri; resmi IntelliJ ile yan yana kurulup birbirinin ayarlarını bozmasın
+- [x] Ürün adı, ikonlar, splash, About ekranı ve ürün tanım dosyaları; arayüzde ve installer'da "IntelliJ" ve JetBrains logoları kalmasın
+  - 9 Kasım 2026: Ad "ReStudio", vendor "ReStudio". Değerler `build/src/.../ReStudioBranding.kt` ve `IdeaApplicationInfo.xml`'de. Geçici ikon ve splash'i `fork/branding/make-images.swift` üretiyor; kalıcı logo gelince script tekrar çalıştırılır.
+  - Doğrulandı (macOS aarch64 `.dmg`, build 263.7307.1000): `ReStudio.app`, bundle ID `io.github.onuragtas.restudio`, URL scheme `restudio`, artifact adı `ReStudio-<build>`. Smoke test geçti.
+  - Vendor JetBrains olmayınca build'in `traverseUI` adımı düştü (boş consents listesi). `AppUIUtil.kt`'de tek satırlık düzeltme var.
+  - Kalanlar: launcher adları `idea` olarak kaldı (`idea.sh`, `idea64.exe`, `IDEA_PROPERTIES`). macOS `Info.plist`'teki telif satırı "Copyright JetBrains s.r.o." diyor; kod JetBrains'e ait olduğu için doğru, ama markalı değil. Linux WM class `jetbrains-restudio`. Help, What's New ve feedback linkleri hâlâ jetbrains.com'a gidiyor (`IntelliJIdeaExternalResourceUrls.kt`).
+- [x] Kendi config, cache ve log dizinleri; resmi IntelliJ ile yan yana kurulup birbirinin ayarlarını bozmasın
+  - Dizinler `<vendor>/<selector>`: `ReStudio/ReStudio2026.3` (macOS'ta `~/Library/Application Support/ReStudio/ReStudio2026.3`). `product-info.json`'da `dataDirectoryName` `ReStudio2026.3`. Resmi IntelliJ ile yan yana kurulum elle denenmedi.
 - [ ] Bundled plugin listesi: dil plugin'leri, LSP4IJ, Flutter, Dart, Python; ihtiyaç olmayanlar (ör. Android) çıkarılsın
-- [ ] Güncelleme kontrolü GitHub Releases'a baksın (veya ilk sürümde kapatılsın)
-- [ ] Desteklenen dillerde plugin önerisi bandını kapat. Fork build'inde `.go` dosyası açılınca IDE "*.go files are supported by IntelliJ IDEA" diyor ve kapalı kaynak Go plugin'ini öneriyor.
+- [x] Güncelleme kontrolü GitHub Releases'a baksın (veya ilk sürümde kapatılsın)
+  - Launcher `-Didea.updates.url` ile `update-metadata` release'indeki `updates.xml`'i okutuyor. Release workflow'u bu dosyayı `fork/make-updates-xml.sh` ile üretip yüklüyor. `latest` linki kullanılmıyor, çünkü GitHub prerelease'i en son release saymıyor.
+  - Release build'leri gerçek bir build numarası alıyor: `263.7307.<1000 + run number>`. SNAPSHOT build'de IDE hiçbir güncellemeyi göstermez.
+  - Doğrulandı (yerel `file://` dosyası): daha yüksek build numarasında `onUpdateFound: true`, daha düşükte `false`. Bildirim penceresi elle görülmedi.
+  - Plugins ekranında Dart, Flutter ve LSP4IJ için güncelleme önerisi yok: `PluginUtils.isUpdateable`, `plugin.path` ile gelen plugin için `false` döner (test: `ReStudioPluginPathUpdateTest`). Bu değişiklik henüz bir installer'da denenmedi.
+- [x] Desteklenen dillerde plugin önerisi bandını kapat. Fork build'inde `.go` dosyası açılınca IDE "*.go files are supported by IntelliJ IDEA" diyor ve kapalı kaynak Go plugin'ini öneriyor.
+  - Launcher `-Dpromo.ignore.suggested.ide=true` veriyor; `PluginsAdvertiser.kt` bu özelliği okuyor. IDE önerisi kapanıyor, Marketplace plugin önerileri kalıyor. `.go` dosyasıyla elle denenmedi.
 - [ ] GitHub Actions ile Windows/macOS/Linux installer build'i; standart runner yetmezse self-hosted runner
   - Upstream'in `.github/workflows/ide_build_and_upload.yml`'ı bunu zaten yapıyor: `ubuntu-latest` üzerinde Docker ile build, `-aarch64.sit` üretimi, sonra `macos-latest` üzerinde `-aarch64.dmg`. Çıktılar imzasız.
   - Fork'ta değişmeden çalışmaz: `.github/actions/build_ide`, `JetBrains/android`'i `github.ref` ile checkout ediyor; bizim branch ve tag'lerimiz orada yok. Ref, `fork/UPSTREAM_BASE`'deki upstream tag'ine sabitlenmeli.
@@ -330,9 +340,12 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Upstream'in günlük `schedule` tetikleyicisi fork'ta gereksiz dakika harcar; fork'ta kapalı kalsın.
   - 9 Kasım 2026: `fork-release.yml` build'den önce `fork/fetch-bundled-plugins.sh`'ı çalıştırıyor. Build'den sonra her Linux `tar.gz`'de Dart, Flutter, LSP4IJ ve Python dizinlerini arıyor; biri yoksa release durur. Kontrol yerel arşivlerde geçti. CI'da henüz çalışmadı.
 - [ ] macOS imzalama ve notarization (yapılmazsa README'de Gatekeeper notu: `xattr -dr com.apple.quarantine`). İmza için Apple Developer ID sertifikası ve notarization bilgileri GitHub secret olarak eklenmeli.
-- [ ] `LICENSE` (Apache 2.0), `NOTICE` ve üçüncü taraf lisans listesi
+- [x] `LICENSE` (Apache 2.0), `NOTICE` ve üçüncü taraf lisans listesi
+  - Kökteki `LICENSE.txt` Apache 2.0 değil: JetBrains, Haziran 2026'da onu kendi build'lerinin kullanım koşullarıyla değiştirdi. IDE'ye `fork/legal/LICENSE.txt` (Apache 2.0) ve `fork/legal/NOTICE.txt` giriyor. Üçüncü taraf kütüphane listesi build'in `license/third-party-libraries.json` dosyası.
+  - Açık: Flutter plugin'i JxBrowser (TeamDev, ticari lisans) içeriyor. Plugin değişmeden dağıtılıyor ve NOTICE'te yazıyor; dağıtım hakkı ayrıca kontrol edilmeli.
 - [ ] Upstream senkron süreci: her JetBrains sürüm tag'ine bir merge; adımlar `docs/upstream-sync.md`'de
-- [ ] README: ne olduğu, JetBrains ile bağlantısı olmadığı, desteklenen diller, kurulum
+- [x] README: ne olduğu, JetBrains ile bağlantısı olmadığı, desteklenen diller, kurulum
+  - `.github/README.md`. GitHub bu dosyayı kökteki README'den önce gösteriyor; böylece upstream README'si değişmiyor ve merge çakışması olmuyor.
 - [ ] Fork'un kökündeki `AGENTS.md`'yi fork'a göre sadeleştir: silinen `.agents/skills/` dosyalarına referanslar kalmasın, fork kuralları (JetBrains koduna dokunma, sadece marka/paketleme) eklensin
 
 **Bitti kriteri:** GitHub Releases'ta indirilebilir installer var; kurulunca kendi adıyla açılıyor, desteklenen diller hazır geliyor, resmi IntelliJ ile yan yana çalışıyor ve bir upstream merge'ü baştan sona yapılmış.
@@ -402,7 +415,8 @@ En büyük risk kapsam: dört dil paketi ve bir fork'un sürekli bakımı tek ki
 
 **Açık sorular**
 
-- [ ] IDE'nin adı ne olacak? (JetBrains markalarına benzemeyen, GitHub'da ve domain olarak boş bir isim)
+- [x] IDE'nin adı ne olacak? (JetBrains markalarına benzemeyen, GitHub'da ve domain olarak boş bir isim)
+  - Cevap (9 Kasım 2026): ReStudio.
 - [ ] Hangi işletim sistemleri için installer çıkacak? İlk sürüm tek platformla sınırlanabilir.
 - [ ] Dil sırası doğru mu? (Öneri: .NET → Go → frontend → PHP)
 - [ ] Roslyn LS mi csharp-ls mi; vtsls mi typescript-language-server mı? Faz 0 ölçümüne göre öneri (onay bekliyor):
@@ -410,7 +424,8 @@ En büyük risk kapsam: dört dil paketi ve bir fork'un sürekli bakımı tek ki
   - **TypeScript:** vtsls. typescript-language-server TS 7 projelerinde başlamıyor; plandan çıkar. TS 7 projelerinde projenin kendi `tsc --lsp` server'ı kullanılsın.
 - [ ] Language server'lar installer'a gömülecek mi, ilk kullanımda mı indirilecek? (lisans, installer boyutu, Node.js bağımlılığı)
 - [ ] Dart plugin'inin ve intellij-community'deki Python plugin'inin fork'a bundled eklenmesinin lisans ve build açısından doğrulanması
-- [ ] Fork'tan JetBrains Marketplace'e erişim açık kalacak mı? Kullanım koşulları kontrol edilmeli.
+- [x] Fork'tan JetBrains Marketplace'e erişim açık kalacak mı? Kullanım koşulları kontrol edilmeli.
+  - Cevap (9 Kasım 2026): Açık kalıyor. README, Marketplace kullanım koşullarına link veriyor. Koşulların hukuki kontrolü yapılmadı.
 - [x] Bir plugin `.zip`'ini fork'un installer build'ine bundled eklemenin doğru yolu; Faz 6 başında intellij-community build script'lerinden doğrulanacak.
   - Cevap (9 Kasım 2026): JetBrains vendor'lı plugin'ler `getAdditionalPluginPaths` ile `plugins/`'e, diğerleri `-Dplugin.path` ile `restudio-plugins/`'e gider (Faz 6).
 - [ ] Fork reposunda `.agents/skills/` silindi. Bu silme kasıtlı mı? Upstream merge'lerinde bu dosyalar tekrar gelir; her merge'de silmek mi, yoksa tutmak mı daha az çakışma yaratır?

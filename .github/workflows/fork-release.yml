@@ -32,6 +32,8 @@ jobs:
   distributions:
     runs-on: ubuntu-latest
     timeout-minutes: 360
+    outputs:
+      build: ${{ steps.base.outputs.build }}
     steps:
       - uses: actions/checkout@v6.0.2
 
@@ -65,7 +67,14 @@ jobs:
       - name: Read the upstream base
         id: base
         shell: bash
-        run: echo "tag=$(tr -d '[:space:]' < fork/UPSTREAM_BASE)" >> "$GITHUB_OUTPUT"
+        # The build number is the branch and the build of the upstream base, then 1000 + the run number.
+        # The IDE shows an update only for a higher build number. A build without a number is a SNAPSHOT build,
+        # and the IDE never shows an update for it.
+        run: |
+          tag=$(tr -d '[:space:]' < fork/UPSTREAM_BASE)
+          version=${tag#idea/}
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "build=$(cut -d. -f1-2 <<< "$version").$((1000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_OUTPUT"
 
       - name: Checkout JetBrains/android at the upstream base
         uses: actions/checkout@v6.0.2
@@ -85,7 +94,7 @@ jobs:
 
       - name: Build
         shell: bash
-        run: docker run --rm --user "$(id -u)" --volume "${PWD}:/community" intellij_idea
+        run: docker run --rm --user "$(id -u)" --volume "${PWD}:/community" intellij_idea -Dbuild.number=${{ steps.base.outputs.build }}
 
       - name: Check the bundled plugins
         shell: bash
@@ -103,24 +112,24 @@ jobs:
           done
 
       - name: Upload Linux
-        uses: ./.github/actions/upload_ide
+        uses: ./.github/actions/fork-upload
         with:
-          os: linux
-          suffix: .tar.gz
+          name: linux.tar.gz-unsigned
+          file: ReStudio-${{ steps.base.outputs.build }}.tar.gz
           artifacts_dir: ${{ env.ARTIFACTS_DIR }}
 
       - name: Upload Windows
-        uses: ./.github/actions/upload_ide
+        uses: ./.github/actions/fork-upload
         with:
-          os: windows
-          suffix: .exe
+          name: windows.exe-unsigned
+          file: ReStudio-${{ steps.base.outputs.build }}.exe
           artifacts_dir: ${{ env.ARTIFACTS_DIR }}
 
       - name: Upload macOS aarch64 archive
-        uses: ./.github/actions/upload_ide
+        uses: ./.github/actions/fork-upload
         with:
-          os: mac
-          suffix: -aarch64.sit
+          name: mac-aarch64.sit-unsigned
+          file: ReStudio-${{ steps.base.outputs.build }}-aarch64.sit
           artifacts_dir: ${{ env.ARTIFACTS_DIR }}
 
       - name: Upload the .dmg build scripts
@@ -152,10 +161,10 @@ jobs:
         run: /bin/bash ./build.sh
 
       - name: Upload the .dmg
-        uses: ./.github/actions/upload_ide
+        uses: ./.github/actions/fork-upload
         with:
-          os: mac
-          suffix: -aarch64.dmg
+          name: mac-aarch64.dmg-unsigned
+          file: ReStudio-${{ needs.distributions.outputs.build }}-aarch64.dmg
           artifacts_dir: .
 
   smoke-test:
@@ -190,14 +199,14 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install -y -q xvfb
           mkdir ide
-          tar -xzf installer/*.SNAPSHOT.tar.gz -C ide --strip-components 1
+          tar -xzf installer/*.tar.gz -C ide --strip-components 1
           fork/smoke-test.sh xvfb-run -a ide/bin/idea.sh
 
       - name: Install the IDE on Windows
         if: matrix.os == 'windows'
         shell: pwsh
         run: |
-          $installer = Get-ChildItem installer -Filter *.SNAPSHOT.exe | Select-Object -First 1
+          $installer = Get-ChildItem installer -Filter *.exe | Select-Object -First 1
           Start-Process -Wait -FilePath $installer.FullName -ArgumentList '/S', '/D=C:\ReStudio'
           Get-ChildItem C:\ReStudio, C:\ReStudio\restudio-plugins
 
@@ -211,6 +220,10 @@ jobs:
     needs: [distributions, dmg, smoke-test]
     if: github.event_name == 'push' || inputs.tag != ''
     steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          sparse-checkout: fork
+
       - name: Download the installers
         uses: actions/download-artifact@v7.0.0
         with:
@@ -230,7 +243,7 @@ jobs:
 
           macOS: the app is not signed or notarized. Gatekeeper blocks it at the first start. Remove the quarantine flag once:
 
-              xattr -dr com.apple.quarantine "/Applications/IntelliJ IDEA OSS.app"
+              xattr -dr com.apple.quarantine /Applications/ReStudio.app
 
           Each installer has a .sha256 file next to it.
           EOF
@@ -241,3 +254,20 @@ jobs:
             --title "ReStudio ${TAG#restudio/}" \
             --notes "$notes" \
             --prerelease
+
+      - name: Publish the update metadata
+        shell: bash
+        # The IDE reads updates.xml from the update-metadata release (ReStudioBranding.UPDATES_URL in build/src).
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+          BUILD: ${{ needs.distributions.outputs.build }}
+        run: |
+          fork/make-updates-xml.sh "$BUILD" "${TAG#restudio/v}" \
+            "https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG" > updates.xml
+          cat updates.xml
+          if ! gh release view update-metadata --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create update-metadata --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "Update metadata" --notes "ReStudio reads updates.xml from this release. Do not delete it." --prerelease
+          fi
+          gh release upload update-metadata updates.xml --repo "$GITHUB_REPOSITORY" --clobber

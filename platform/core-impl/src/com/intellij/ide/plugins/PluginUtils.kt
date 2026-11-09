@@ -225,6 +225,18 @@ object PluginUtils {
 
   @JvmStatic
   fun isUpdateable(plugin: PluginDescriptor): Boolean {
-    return !plugin.isBundled || plugin.allowBundledUpdate()
+    return (!plugin.isBundled || plugin.allowBundledUpdate()) && !isFromPluginPathProperty(plugin)
+  }
+
+  /**
+   * ReStudio: a plugin from the `plugin.path` property wins against an installed update with the same ID.
+   * Thus, an update from a plugin repository has no effect.
+   */
+  private fun isFromPluginPathProperty(plugin: PluginDescriptor): Boolean {
+    val property = System.getProperty("plugin.path") ?: return false
+    val pluginPath = plugin.pluginPath?.toAbsolutePath()?.normalize() ?: return false
+    return property.split(',', File.pathSeparatorChar).any {
+      it.isNotBlank() && runCatching { java.nio.file.Paths.get(it.trim()).toAbsolutePath().normalize() }.getOrNull() == pluginPath
+    }
   }
 }

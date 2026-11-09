@@ -27,6 +27,7 @@ idea.trust.all.projects=true
 jb.consents.confirmation.enabled=false
 jb.privacy.policy.text=<!--999.999-->
 idea.initially.ask.config=never
+intellij.startup.wizard=false
 testscript.filename=$work/script.txt
 EOF
 export IDEA_PROPERTIES="$work/idea.properties"

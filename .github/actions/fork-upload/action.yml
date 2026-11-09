@@ -1,0 +1,35 @@
+# Fork only: the same as upload_ide, but for one file name. upload_ide matches only *.SNAPSHOT files, and the
+# release builds of ReStudio have a real build number.
+inputs:
+  name:
+    description: 'The artifact name, for example linux.tar.gz-unsigned'
+    required: true
+  file:
+    description: 'The installer file name'
+    required: true
+  artifacts_dir:
+    description: 'The directory that holds the installer'
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Generate the checksum
+      shell: bash
+      working-directory: ${{ inputs.artifacts_dir }}
+      env:
+        FILE: ${{ inputs.file }}
+      run: |
+        if [ "$(uname)" == Darwin ]; then
+          shasum --algorithm 256 --binary "$FILE"
+        else
+          sha256sum --binary "$FILE"
+        fi > "$FILE.sha256"
+    - name: Upload ${{ inputs.file }}
+      uses: actions/upload-artifact@v6.0.0
+      with:
+        name: ${{ inputs.name }}
+        if-no-files-found: 'error'
+        retention-days: 1
+        path: |
+          ${{ inputs.artifacts_dir }}/${{ inputs.file }}
+          ${{ inputs.artifacts_dir }}/${{ inputs.file }}.sha256

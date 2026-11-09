@@ -50,7 +50,12 @@ Her sync PR'ı merge edilmeden önce:
 
 | Dosya | Neden | Eklendiği sync |
 |---|---|---|
-| `build/src/org/jetbrains/intellij/build/IdeaCommunityProperties.kt` | Üç çağrı `ReStudioPlugins`'e gider (fork dosyası, aynı dizinde): `getAdditionalPluginPaths`, `getAdditionalContextDependentIdeJvmArguments` ve `copyAdditionalFiles` içindeki bir satır. `out/restudio-plugins` yoksa build upstream ile aynıdır. | — (ilk fork değişikliği) |
+| `build/src/org/jetbrains/intellij/build/IdeaCommunityProperties.kt` | Üç çağrı `ReStudioPlugins`'e gider (fork dosyası, aynı dizinde): `getAdditionalPluginPaths`, `getAdditionalContextDependentIdeJvmArguments` ve `copyAdditionalFiles` içindeki bir satır. `out/restudio-plugins` yoksa build upstream ile aynıdır. Marka değerleri `ReStudioBranding`'den gelir: görsel dizini, VM seçenekleri, dizin adı, artifact adı, lisans dosyaları ve üç customizer'daki ad, dizin, bundle ID ve URL scheme. | — (ilk fork değişikliği) |
+| `community-resources/resources/idea/IdeaApplicationInfo.xml` | Şirket adı, ürün adı, motto, splash ve ikon yolları ReStudio'ya ait. Görseller aynı dizinde `restudio*` adlı yeni dosyalarda. `script="idea"` değişmedi; launcher adları `idea` olarak kalır. | — (Faz 7) |
+| `build/conf/nsis/idea.nsi` | Üç satır: `CompanyName` ve `Publisher` `${MANUFACTURER}` kullanır, `URLInfoAbout` ReStudio reposunu gösterir. | — (Faz 7) |
+| `platform/platform-impl/src/com/intellij/openapi/updateSettings/impl/pluginsAdvertisement/PluginsAdvertiser.kt` | Bir satır: `promo.ignore.suggested.ide` sistem özelliği de JetBrains IDE önerisini kapatır. Launcher bu özelliği verir. | — (Faz 7) |
+| `platform/platform-impl/src/com/intellij/ui/AppUIUtil.kt` | Bir satır: `loadConsentsForEditing` consents listesinin kopyasını alır. Vendor JetBrains değilse ve `consents-<vendor>.json` yoksa liste boş ve değiştirilemez; `removeIf` hata verir ve build'in `traverseUI` adımı düşer. Upstream'e de gönderilebilir. | — (Faz 7) |
+| `platform/core-impl/src/com/intellij/ide/plugins/PluginUtils.kt` | `isUpdateable`, `plugin.path` ile gelen bir plugin için `false` döner. Böyle bir plugin aynı ID'li kurulu güncellemeyi geçersiz kılar, bu yüzden Marketplace güncellemesi işe yaramaz. Test: `platform/platform-tests/.../ReStudioPluginPathUpdateTest.kt`. | — (Faz 7) |
 | `platform/build-scripts/src/org/jetbrains/intellij/build/impl/productInfo/ProductLaunchRenderer.kt` | `IDE_HOME_PLACEHOLDER` sabiti ve bir satır: ek JVM argümanlarındaki yer tutucuyu işletim sisteminin IDE dizini makrosuyla değiştirir. `-Dplugin.path` buna ihtiyaç duyar. | — (ilk fork değişikliği) |
 
 ## Yeni sürüm serisine geçiş
