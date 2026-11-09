@@ -185,7 +185,7 @@ jobs:
           sudo apt-get install -y -q xvfb
           mkdir ide
           tar -xzf installer/*.tar.gz -C ide --strip-components 1
-          fork/smoke-test.sh xvfb-run -a ide/bin/idea.sh
+          fork/smoke-test.sh xvfb-run -a ide/bin/restudio.sh
 
   release:
     runs-on: ubuntu-latest

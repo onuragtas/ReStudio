@@ -38,7 +38,9 @@ class ReStudioBrandingTest {
     val resources = communityHome.resolve("community-resources/resources")
     val applicationInfo = Files.readString(resources.resolve("idea/IdeaApplicationInfo.xml"))
 
-    assertThat(applicationInfo).contains("""<company name="ReStudio"""", """fullname="ReStudio"""").doesNotContain("JetBrains")
+    assertThat(applicationInfo)
+      .contains("""<company name="ReStudio"""", """fullname="ReStudio"""", """script="${ReStudioBranding.LAUNCHER_NAME}"""")
+      .doesNotContain("JetBrains")
     for (image in Regex("""(?:url|svg|svg-small)="/([^"]+)"""").findAll(applicationInfo).map { it.groupValues[1] }) {
       assertThat(resources.resolve(image)).exists()
     }

@@ -5,7 +5,7 @@
   <logo url="/restudio_logo.png"/>
   <icon svg="/restudio.svg" svg-small="/restudio_16.svg"/>
   <icon-eap svg="/restudio.svg" svg-small="/restudio_16.svg"/>
-  <names product="ReStudio" fullname="ReStudio" script="idea" motto="An Open-Source IDE for Many Languages"/>
+  <names product="ReStudio" fullname="ReStudio" script="restudio" motto="An Open-Source IDE for Many Languages"/>
 
   <essential-plugin>com.intellij.idea.customization</essential-plugin>
   <essential-plugin>com.intellij.java</essential-plugin>

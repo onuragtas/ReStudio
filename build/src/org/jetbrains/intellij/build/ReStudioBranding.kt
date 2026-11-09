@@ -21,6 +21,13 @@ object ReStudioBranding {
 
   const val URL_SCHEME: String = "restudio"
 
+  /**
+   * The base name of the launchers: `bin/restudio.sh` and `Contents/MacOS/restudio`.
+   * The launchers read the `RESTUDIO_PROPERTIES`, `RESTUDIO_VM_OPTIONS` and `RESTUDIO_JDK` environment variables.
+   * The `script` attribute in `IdeaApplicationInfo.xml` must have the same value.
+   */
+  const val LAUNCHER_NAME: String = "restudio"
+
   const val RELEASES_URL: String = "https://github.com/onuragtas/ReStudio/releases"
 
   /**

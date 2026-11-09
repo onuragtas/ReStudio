@@ -124,7 +124,7 @@ open class IdeaCommunityProperties(private val communityHomeDir: Path) : JetBrai
   }
 
   override val baseFileName: String
-    get() = "idea"
+    get() = ReStudioBranding.LAUNCHER_NAME
 
   /** ReStudio: see [ReStudioPlugins]. */
   override fun getAdditionalPluginPaths(context: BuildContext): List<Path> = ReStudioPlugins.bundledPluginPaths(communityHomeDir)

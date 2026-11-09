@@ -4,8 +4,8 @@
 # The release workflow runs it on Linux.
 #
 # Usage: fork/smoke-test.sh <launcher command>
-#   Linux:   fork/smoke-test.sh xvfb-run -a <ide>/bin/idea.sh
-#   macOS:   fork/smoke-test.sh <app>/Contents/MacOS/idea
+#   Linux:   fork/smoke-test.sh xvfb-run -a <ide>/bin/restudio.sh
+#   macOS:   fork/smoke-test.sh <app>/Contents/MacOS/restudio
 set -euo pipefail
 
 timeout_seconds="${SMOKE_TEST_TIMEOUT:-900}"
@@ -29,7 +29,7 @@ idea.initially.ask.config=never
 intellij.startup.wizard=false
 testscript.filename=$work/script.txt
 EOF
-export IDEA_PROPERTIES="$work/idea.properties"
+export RESTUDIO_PROPERTIES="$work/idea.properties"
 
 echo "Starting the IDE in $work"
 "$@" "$work/project" > "$work/stdout.log" 2>&1 &
