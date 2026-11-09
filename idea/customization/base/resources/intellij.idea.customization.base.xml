@@ -10,7 +10,7 @@
                         overrides="true"/>
 
     <applicationService serviceInterface="com.intellij.platform.ide.customization.ExternalProductResourceUrls"
-                        serviceImplementation="com.intellij.idea.customization.base.IntelliJIdeaExternalResourceUrls"
+                        serviceImplementation="com.intellij.idea.customization.base.ReStudioExternalResourceUrls"
                         overrides="true"/>
 
     <applicationService serviceInterface="com.intellij.openapi.ui.DialogBackgroundImageProvider"
