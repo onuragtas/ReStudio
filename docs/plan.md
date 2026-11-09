@@ -295,9 +295,20 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 
 ### Faz 6: Flutter, Dart ve Python paketleme (1 hafta)
 
-- [ ] Google'ın Flutter plugin'i ve Dart plugin'ini fork build'ine bundled ekle
-- [ ] intellij-community içindeki açık kaynak Python plugin'ini bundled ekle
+- [x] Google'ın Flutter plugin'i ve Dart plugin'ini fork build'ine bundled ekle
+- [x] intellij-community içindeki açık kaynak Python plugin'ini bundled ekle
+  - 9 Kasım 2026: `fork/bundled-plugins.tsv` plugin'leri, Marketplace sürümlerini ve SHA-256 değerlerini tutuyor. `fork/fetch-bundled-plugins.sh` zip'leri indirip `out/restudio-plugins/` altına açıyor. Build bu dizini `build/src/.../ReStudioPlugins.kt` ile okuyor.
+  - Python, kaynaktan derlenmiyor. Marketplace'teki `PythonCore` 263.7307.200 kullanılıyor; bu sürüm fork'un build'iyle aynı.
+  - Dart, Flutter ve LSP4IJ bundled olarak yüklenemiyor. Platform, uyumluluk bağımlılıklarını sadece bundled olmayan eski stil plugin'lere ekliyor (`ProductPluginInitContext.kt`). Bundled Dart, `XLineBreakpointTypeBase` sınıfını bulamadı.
+  - Bu üç plugin `Contents/restudio-plugins/` altında duruyor. Launcher onları `-Dplugin.path` ile yüklüyor, Marketplace kurulumunda olduğu gibi. `ProductLaunchRenderer.kt`'deki `IDE_HOME_PLACEHOLDER`, yolu işletim sisteminin makrosuna çeviriyor. Python bundled kalıyor.
+  - Doğrulandı (macOS aarch64 `.dmg`): dört plugin de yükleniyor ve log'da `SEVERE` yok.
+  - Linux `tar.gz` ve Windows dağıtımı macOS'ta derlendi. Yerleşim doğru. `idea.sh` ve Linux `product-info.json` `$IDE_HOME`, `idea.bat` `%IDE_HOME%` kullanıyor. Bu iki sistemde IDE açılıp denenmedi. Windows `.exe` ve zip adımları macOS'ta atlanıyor.
+  - `build/tests/.../ReStudioPluginsTest.kt`: dizin kuralları ve üç işletim sisteminin makrosu için 6 test.
+  - Kısıt: `plugin.path` ile gelen bir plugin, aynı ID'li daha yeni bir sürümü de geçersiz kılıyor (`pluginInitContextSelectCandidateSubset.kt`). Kullanıcı bu üç plugin'i Marketplace'ten güncelleyemez; güncelleme yeni bir ReStudio sürümüyle gelir. Faz 7'de Plugins ekranında güncelleme önerisi gizlenmeli.
 - [ ] Plugin sürümlerinin fork'un IDE sürümüyle uyumunu doğrula; uyumsuzlukta plugin'i kaynaktan derle
+  - Otomatik deneme (9 Kasım 2026, `performanceTesting` plugin'inin `testscript.filename` script'i): Python script'i Run ve Debug ile 0 koduyla bitiyor. Flutter testi (`testdata/flutter`) Run ile 0 koduyla bitiyor.
+  - Flutter test Debug'ı bu araçla doğrulanamadı. Dart debugger VM service'e bağlanıyor, ama test `--start-paused` durumunda kalıyor. Faz 0'daki Marketplace kurulumu da aynı davranıyor; sebep aracın `RunConfigurationCommand`'ındaki NPE. Flutter runner `processStarting` olayını göndermiyor.
+  - Açık (elle): Flutter Debug'da breakpoint ve hot reload. Python'da kayıtlı bir SDK gerekli; temiz bir kurulumda SDK yoksa run configuration ayar penceresini açıyor.
 
 **Bitti kriteri:** Flutter projesi ek kurulum olmadan açılıyor, hot reload ve debug çalışıyor; Python projesi çalışıyor.
 
@@ -399,7 +410,8 @@ En büyük risk kapsam: dört dil paketi ve bir fork'un sürekli bakımı tek ki
 - [ ] Language server'lar installer'a gömülecek mi, ilk kullanımda mı indirilecek? (lisans, installer boyutu, Node.js bağımlılığı)
 - [ ] Dart plugin'inin ve intellij-community'deki Python plugin'inin fork'a bundled eklenmesinin lisans ve build açısından doğrulanması
 - [ ] Fork'tan JetBrains Marketplace'e erişim açık kalacak mı? Kullanım koşulları kontrol edilmeli.
-- [ ] Bir plugin `.zip`'ini fork'un installer build'ine bundled eklemenin doğru yolu; Faz 6 başında intellij-community build script'lerinden doğrulanacak.
+- [x] Bir plugin `.zip`'ini fork'un installer build'ine bundled eklemenin doğru yolu; Faz 6 başında intellij-community build script'lerinden doğrulanacak.
+  - Cevap (9 Kasım 2026): JetBrains vendor'lı plugin'ler `getAdditionalPluginPaths` ile `plugins/`'e, diğerleri `-Dplugin.path` ile `restudio-plugins/`'e gider (Faz 6).
 - [ ] Fork reposunda `.agents/skills/` silindi. Bu silme kasıtlı mı? Upstream merge'lerinde bu dosyalar tekrar gelir; her merge'de silmek mi, yoksa tutmak mı daha az çakışma yaratır?
 
 ## Kaynaklar
