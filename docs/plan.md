@@ -321,7 +321,9 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Kalanlar: launcher adları `idea` olarak kaldı (`idea.sh`, `idea64.exe`, `IDEA_PROPERTIES`). macOS `Info.plist`'teki telif satırı "Copyright JetBrains s.r.o." diyor; kod JetBrains'e ait olduğu için doğru, ama markalı değil. Linux WM class `jetbrains-restudio`. Help, What's New ve feedback linkleri hâlâ jetbrains.com'a gidiyor (`IntelliJIdeaExternalResourceUrls.kt`).
 - [x] Kendi config, cache ve log dizinleri; resmi IntelliJ ile yan yana kurulup birbirinin ayarlarını bozmasın
   - Dizinler `<vendor>/<selector>`: `ReStudio/ReStudio2026.3` (macOS'ta `~/Library/Application Support/ReStudio/ReStudio2026.3`). `product-info.json`'da `dataDirectoryName` `ReStudio2026.3`. Resmi IntelliJ ile yan yana kurulum elle denenmedi.
-- [ ] Bundled plugin listesi: dil plugin'leri, LSP4IJ, Flutter, Dart, Python; ihtiyaç olmayanlar (ör. Android) çıkarılsın
+- [x] Bundled plugin listesi: dil plugin'leri, LSP4IJ, Flutter, Dart, Python; ihtiyaç olmayanlar (ör. Android) çıkarılsın
+  - 9 Kasım 2026: Android plugin'i IC build'inde zaten yok. 68 bundled plugin kalıyor. Hepsi yükleniyor, log'da hata yok ve smoke test geçiyor. Bu yüzden hiçbiri çıkarılmadı (karar: Onur, 9 Kasım 2026).
+  - "IntelliJ IDEA Customization" plugin'i `implementation-detail="true"`. Plugins ekranı onu göstermiyor; adını değiştirmek gerekmiyor.
 - [x] Güncelleme kontrolü GitHub Releases'a baksın (veya ilk sürümde kapatılsın)
   - Launcher `-Didea.updates.url` ile `update-metadata` release'indeki `updates.xml`'i okutuyor. Release workflow'u bu dosyayı `fork/make-updates-xml.sh` ile üretip yüklüyor. `latest` linki kullanılmıyor, çünkü GitHub prerelease'i en son release saymıyor.
   - Release build'leri gerçek bir build numarası alıyor: `263.7307.<1000 + run number>`. SNAPSHOT build'de IDE hiçbir güncellemeyi göstermez.
@@ -339,7 +341,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Upstream workflow sadece Apple Silicon (aarch64) `.dmg`'yi yüklüyor. Yerel build Intel `.dmg`'yi de üretiyor; Intel Mac gerekiyorsa workflow'a onun yükleme adımı eklenmeli.
   - Upstream'in günlük `schedule` tetikleyicisi fork'ta gereksiz dakika harcar; fork'ta kapalı kalsın.
   - 9 Kasım 2026: `fork-release.yml` build'den önce `fork/fetch-bundled-plugins.sh`'ı çalıştırıyor. Build'den sonra her Linux `tar.gz`'de Dart, Flutter, LSP4IJ ve Python dizinlerini arıyor; biri yoksa release durur. Kontrol yerel arşivlerde geçti. CI'da henüz çalışmadı.
-- [ ] macOS imzalama ve notarization (yapılmazsa README'de Gatekeeper notu: `xattr -dr com.apple.quarantine`). İmza için Apple Developer ID sertifikası ve notarization bilgileri GitHub secret olarak eklenmeli.
+- [ ] (En sona bırakıldı, 9 Kasım 2026) macOS imzalama ve notarization (yapılmazsa README'de Gatekeeper notu: `xattr -dr com.apple.quarantine`). İmza için Apple Developer ID sertifikası ve notarization bilgileri GitHub secret olarak eklenmeli.
 - [x] `LICENSE` (Apache 2.0), `NOTICE` ve üçüncü taraf lisans listesi
   - Kökteki `LICENSE.txt` Apache 2.0 değil: JetBrains, Haziran 2026'da onu kendi build'lerinin kullanım koşullarıyla değiştirdi. IDE'ye `fork/legal/LICENSE.txt` (Apache 2.0) ve `fork/legal/NOTICE.txt` giriyor. Üçüncü taraf kütüphane listesi build'in `license/third-party-libraries.json` dosyası.
   - Açık: Flutter plugin'i JxBrowser (TeamDev, ticari lisans) içeriyor. Plugin değişmeden dağıtılıyor ve NOTICE'te yazıyor; dağıtım hakkı ayrıca kontrol edilmeli.
