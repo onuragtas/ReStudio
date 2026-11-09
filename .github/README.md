@@ -28,7 +28,6 @@ For example, it does not have the JetBrains support for JavaScript, TypeScript o
 
 Download the installer for your system from [GitHub Releases](https://github.com/onuragtas/ReStudio/releases).
 
-- **Windows:** run the `.exe` file.
 - **Linux:** extract the `.tar.gz` file and run `bin/idea.sh`.
 - **macOS (Apple Silicon):** open the `.dmg` file and drag the app into Applications.
   The app is not signed. Gatekeeper blocks it at the first start. Remove the quarantine flag once:

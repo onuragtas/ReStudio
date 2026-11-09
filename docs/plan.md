@@ -27,7 +27,7 @@ intellij-community fork'lanacak; Java ve Kotlin'in yanına .NET, Go, PHP, Flutte
 - Debug: breakpoint, step, değişken, watch (DAP üzerinden)
 - Test runner: xUnit/NUnit/MSTest, `go test`, PHPUnit/Pest, Vitest/Jest sonuçlarının IntelliJ test penceresinde gösterilmesi
 - Paket yönetimi: NuGet arayüzü; diğer dillerde CLI komutları için run configuration
-- Kendi adı ve ikonuyla IDE dağıtımı: GitHub'da public kaynak + GitHub Releases'ta Windows/macOS/Linux installer
+- Kendi adı ve ikonuyla IDE dağıtımı: GitHub'da public kaynak + GitHub Releases'ta macOS/Linux installer (Windows yok, karar: 9 Kasım 2026)
 
 **Kapsam dışı**
 
@@ -49,7 +49,7 @@ Karar: intellij-community fork'lanıp kendi markanla bir IDE olarak yayınlanaca
 | İçerik | intellij-community + marka, ikonlar, ürün tanımı, bundled plugin listesi | Ortak dil altyapısı + .NET, Go, PHP ve frontend plugin'leri |
 | Build | IntelliJ ile kaynaktan derleme, `installers.cmd` ile installer; uzun ve ağır | Gradle, dakikalar; `runIde` ile anında deneme |
 | Değişim sıklığı | JetBrains sürümü başına bir upstream merge + marka değişiklikleri | Günlük geliştirme |
-| Çıktı | GitHub Releases'ta Windows/macOS/Linux installer | Her dil için plugin `.zip`'i; fork build'i bunları içine alır, istenirse resmi IntelliJ'ye de ayrıca kurulabilir |
+| Çıktı | GitHub Releases'ta macOS/Linux installer | Her dil için plugin `.zip`'i; fork build'i bunları içine alır, istenirse resmi IntelliJ'ye de ayrıca kurulabilir |
 
 Neden kodu fork'un içine yazmıyoruz: intellij-community'de her değişiklik büyük bir JPS build'i tetikler ve upstream merge'lerinde senin kodunla JetBrains kodu çakışır. Ayrı plugin reposu hem geliştirmeyi hızlandırır hem de upstream merge'lerini sadece marka dosyalarına indirger.
 
@@ -337,7 +337,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Plugins ekranında Dart, Flutter ve LSP4IJ için güncelleme önerisi yok: `PluginUtils.isUpdateable`, `plugin.path` ile gelen plugin için `false` döner (test: `ReStudioPluginPathUpdateTest`). Bu değişiklik henüz bir installer'da denenmedi.
 - [x] Desteklenen dillerde plugin önerisi bandını kapat. Fork build'inde `.go` dosyası açılınca IDE "*.go files are supported by IntelliJ IDEA" diyor ve kapalı kaynak Go plugin'ini öneriyor.
   - Launcher `-Dpromo.ignore.suggested.ide=true` veriyor; `PluginsAdvertiser.kt` bu özelliği okuyor. IDE önerisi kapanıyor, Marketplace plugin önerileri kalıyor. `.go` dosyasıyla elle denenmedi.
-- [ ] GitHub Actions ile Windows/macOS/Linux installer build'i; standart runner yetmezse self-hosted runner
+- [ ] GitHub Actions ile macOS/Linux installer build'i; standart runner yetmezse self-hosted runner
   - Upstream'in `.github/workflows/ide_build_and_upload.yml`'ı bunu zaten yapıyor: `ubuntu-latest` üzerinde Docker ile build, `-aarch64.sit` üretimi, sonra `macos-latest` üzerinde `-aarch64.dmg`. Çıktılar imzasız.
   - Fork'ta değişmeden çalışmaz: `.github/actions/build_ide`, `JetBrains/android`'i `github.ref` ile checkout ediyor; bizim branch ve tag'lerimiz orada yok. Ref, `fork/UPSTREAM_BASE`'deki upstream tag'ine sabitlenmeli.
   - Upstream dosyalarına dokunmamak için ayrı bir `fork-release.yml` yaz: build adımlarını ondan çağır, `.dmg`'yi `gh release create` ile GitHub Releases'a yükle.
@@ -349,10 +349,10 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - 9 Kasım 2026: `fork-release.yml` build'den önce `fork/fetch-bundled-plugins.sh`'ı çalıştırıyor. Build'den sonra her Linux `tar.gz`'de Dart, Flutter, LSP4IJ ve Python dizinlerini arıyor; biri yoksa release durur. Kontrol yerel arşivlerde geçti. CI'da henüz çalışmadı.
 - [ ] IDE içinden otomatik güncelleme ("Update and Restart"), yama dosyalarıyla. Sıra (karar: Onur, 9 Kasım 2026): `v0.1.0` yamasız çıkar; yama ikinci release'te eklenir ve denenir.
   - `ReStudioExternalResourceUrls.basePatchDownloadUrl` → `releases/download/update-metadata/`. IDE yamayı `IC-<eski>-<yeni>-patch[-aarch64]-<os>.jar` adıyla bu adreste arar (`computePatchUrl`).
-  - Release job'ı önceki release'in Linux, Windows ve macOS dağıtımlarını indirir, açar ve `updater` (`updater/src/com/intellij/updater/Runner.java`, `create` komutu) ile her OS ve mimari için yama üretir. Yamalar `update-metadata` release'ine yüklenir.
+  - Release job'ı önceki release'in Linux ve macOS dağıtımlarını indirir, açar ve `updater` (`updater/src/com/intellij/updater/Runner.java`, `create` komutu) ile her OS ve mimari için yama üretir. Yamalar `update-metadata` release'ine yüklenir.
   - `fork/make-updates-xml.sh` `<patch from="<eski build>" size="..."/>` satırlarını ekler.
   - Yama sadece önceki sürümden geçerli; daha eski sürümler "Download" ile tam installer alır.
-  - Denenecek: Windows'ta `Program Files` altında yönetici izni; macOS imzası eklendikten sonra yamanın imzalı dosyaları taşıması.
+  - Denenecek: macOS imzası eklendikten sonra yamanın imzalı dosyaları taşıması.
 - [ ] CI build süresini kısalt. Ölçüm (run 42620657587, `distributions` job'ı 57 dakika):
   - Bazel analiz 3 dk, Bazel derleme 24 dk (6535 action, cache yok).
   - Paketleme 22 dk. Bunun 16-18 dakikası Windows NSIS `.exe` sıkıştırması (`SetCompressor lzma`); x64 ve aarch64 aynı anda çalışır. Linux 3 dk, macOS 2 dk, traverseUI 1 dk.
@@ -360,6 +360,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Seçenek 2: Tag'siz test run'larında NSIS `zlib` kullansın, release'te `lzma` kalsın (`idea.nsi`'de `$%RESTUDIO_NSIS_COMPRESSOR%` ile; JetBrains dosyasında 3-4 satır). Tahmini kazanç 10 dk; test installer'ı daha büyük olur.
   - Seçenek 3: Daha büyük GitHub runner (ücretli, dakika başına).
   - `intellij.build.target.arch` tek bir değer alır; sadece Windows aarch64'ü atlamak mümkün değil.
+  - Yapıldı (9 Kasım 2026, karar: Onur): ReStudio Windows dağıtımı yapmaz. Build `-Dintellij.build.skip.build.steps=windows_artifacts` ile Windows `.exe` ve zip adımını atlar; Windows smoke testi kalktı. Beklenen kazanç 16-18 dk. Seçenek 2 (NSIS `zlib`) artık gereksiz.
 - [ ] (En sona bırakıldı, 9 Kasım 2026) macOS imzalama ve notarization (yapılmazsa README'de Gatekeeper notu: `xattr -dr com.apple.quarantine`). İmza için Apple Developer ID sertifikası ve notarization bilgileri GitHub secret olarak eklenmeli.
 - [x] `LICENSE` (Apache 2.0), `NOTICE` ve üçüncü taraf lisans listesi
   - Kökteki `LICENSE.txt` Apache 2.0 değil: JetBrains, Haziran 2026'da onu kendi build'lerinin kullanım koşullarıyla değiştirdi. IDE'ye `fork/legal/LICENSE.txt` (Apache 2.0) ve `fork/legal/NOTICE.txt` giriyor. Üçüncü taraf kütüphane listesi build'in `license/third-party-libraries.json` dosyası.

@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # Starts an installed IDE with a small Python and Dart project, waits for indexing, and closes the IDE.
 # It stops with an error if Dart, Flutter, LSP4IJ or Python does not load, or if one of them logs an error.
-# The release workflow runs it on Linux and Windows.
+# The release workflow runs it on Linux.
 #
 # Usage: fork/smoke-test.sh <launcher command>
 #   Linux:   fork/smoke-test.sh xvfb-run -a <ide>/bin/idea.sh
-#   Windows: fork/smoke-test.sh <ide>/bin/idea64.exe
 #   macOS:   fork/smoke-test.sh <app>/Contents/MacOS/idea
 set -euo pipefail
 

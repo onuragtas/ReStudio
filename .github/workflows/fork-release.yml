@@ -94,7 +94,10 @@ jobs:
 
       - name: Build
         shell: bash
-        run: docker run --rm --user "$(id -u)" --volume "${PWD}:/community" intellij_idea -Dbuild.number=${{ steps.base.outputs.build }}
+        # ReStudio has no Windows distribution (decision of 9 November 2026). The Windows installer step took 16-18 minutes.
+        run: |
+          docker run --rm --user "$(id -u)" --volume "${PWD}:/community" intellij_idea \
+            -Dbuild.number=${{ steps.base.outputs.build }} -Dintellij.build.skip.build.steps=windows_artifacts
 
       - name: Check the bundled plugins
         shell: bash
@@ -116,13 +119,6 @@ jobs:
         with:
           name: linux.tar.gz-unsigned
           file: ReStudio-${{ steps.base.outputs.build }}.tar.gz
-          artifacts_dir: ${{ env.ARTIFACTS_DIR }}
-
-      - name: Upload Windows
-        uses: ./.github/actions/fork-upload
-        with:
-          name: windows.exe-unsigned
-          file: ReStudio-${{ steps.base.outputs.build }}.exe
           artifacts_dir: ${{ env.ARTIFACTS_DIR }}
 
       - name: Upload macOS aarch64 archive
@@ -169,17 +165,7 @@ jobs:
 
   smoke-test:
     needs: distributions
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: linux
-            runner: ubuntu-latest
-            artifact: linux.tar.gz-unsigned
-          - os: windows
-            runner: windows-latest
-            artifact: windows.exe-unsigned
-    runs-on: ${{ matrix.runner }}
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6.0.2
@@ -189,11 +175,10 @@ jobs:
       - name: Download the installer
         uses: actions/download-artifact@v7.0.0
         with:
-          name: ${{ matrix.artifact }}
+          name: linux.tar.gz-unsigned
           path: installer
 
       - name: Start the IDE on Linux
-        if: matrix.os == 'linux'
         shell: bash
         run: |
           sudo apt-get update -q
@@ -201,19 +186,6 @@ jobs:
           mkdir ide
           tar -xzf installer/*.tar.gz -C ide --strip-components 1
           fork/smoke-test.sh xvfb-run -a ide/bin/idea.sh
-
-      - name: Install the IDE on Windows
-        if: matrix.os == 'windows'
-        shell: pwsh
-        run: |
-          $installer = Get-ChildItem installer -Filter *.exe | Select-Object -First 1
-          Start-Process -Wait -FilePath $installer.FullName -ArgumentList '/S', '/D=C:\ReStudio'
-          Get-ChildItem C:\ReStudio, C:\ReStudio\restudio-plugins
-
-      - name: Start the IDE on Windows
-        if: matrix.os == 'windows'
-        shell: bash
-        run: fork/smoke-test.sh /c/ReStudio/bin/idea64.exe
 
   release:
     runs-on: ubuntu-latest
