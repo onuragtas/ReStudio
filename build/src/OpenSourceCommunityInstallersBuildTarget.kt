@@ -4,6 +4,7 @@ import org.jetbrains.intellij.build.BuildLifetime
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.intellij.build.BuildOptions
 import org.jetbrains.intellij.build.OsFamily
+import org.jetbrains.intellij.build.ReStudioMacSigning
 import org.jetbrains.intellij.build.buildCommunityStandaloneJpsBuilder
 import org.jetbrains.intellij.build.createCommunityBuildContext
 import org.jetbrains.intellij.build.impl.buildDistributions
@@ -40,7 +41,8 @@ object OpenSourceCommunityInstallersBuildTarget {
   fun main(args: Array<String>) {
     BuildLifetime().use { lifetime ->
 
-      val options = OPTIONS.copy(buildStepsToSkip = OPTIONS.buildStepsToSkip + BUILD_STEPS_DISABLED_FOR_GITHUB_ACTIONS)
+      // ReStudio: ReStudioMacSigning.enabledSteps() keeps the signing steps when the build Mac has a certificate
+      val options = OPTIONS.copy(buildStepsToSkip = OPTIONS.buildStepsToSkip + BUILD_STEPS_DISABLED_FOR_GITHUB_ACTIONS - ReStudioMacSigning.enabledSteps())
       val context = createCommunityBuildContext(options, lifetime = lifetime)
       context.compileModules(moduleNames = null, includingTestsInModules = listOf("intellij.platform.jps.build.tests"))
       buildDistributions(context)

@@ -32,11 +32,14 @@ Ask the user for the version. The tag is `restudio/v<version>`, for example `res
 ```bash
 fork/fetch-bundled-plugins.sh
 build=$(fork/next-build-number.sh)
+set -a; source ~/.restudio-dev/signing.env; set +a
+export APPLE_PRIVATE_KEY="$(cat "$RESTUDIO_NOTARY_KEY_FILE")"
 ./installers.cmd -Dbuild.number="$build" -Dintellij.build.skip.build.steps=windows_artifacts
 ```
 
 - `next-build-number.sh` reads the published `updates.xml` and prints a higher number. The IDE shows an update only for a higher build number.
 - ReStudio has no Windows distribution, so the build skips the Windows steps.
+- `~/.restudio-dev/signing.env` holds the signing certificate name and the notarization key. It is not in a repository. With it, `ReStudioMacSigning` (`build/src`) signs the macOS distribution with `codesign`, and the build notarizes and staples each `.sit` and `.dmg`. Apple can take from minutes to hours for a notarization. Without the file, the build makes unsigned installers. Then publish without `SIGNED=true` in step 6.
 - Run the build in the background. With a warm Bazel cache, the build took 5 minutes on an M1 Pro (10 November 2026). After an upstream merge, the build compiles all modules again and takes about 40 minutes.
 
 The build writes the installers to `out/idea-ce/artifacts`. A name without `-aarch64` is the x64 installer.
@@ -53,6 +56,7 @@ fork/check-bundled-plugins.sh "$artifacts/ReStudio-$build.tar.gz" "$artifacts/Re
 app=$(mktemp -d)
 ditto -x -k "$artifacts/ReStudio-$build-aarch64.sit" "$app"
 fork/smoke-test.sh "$app"/*.app/Contents/MacOS/restudio
+spctl --assess --type execute --verbose "$app"/*.app   # signed build only: must say "accepted" and "Notarized Developer ID"
 ```
 
 The smoke test must print "The IDE loaded the bundled plugins without errors". It checks only the macOS aarch64 installer. The Mac has no Docker, so it cannot run the Linux smoke test. Tell the user which installers had no smoke test.
@@ -76,10 +80,10 @@ Show the user the tag, the build number, the commit (`git rev-parse --short HEAD
 ## 6. Publish
 
 ```bash
-fork/publish-release.sh onuragtas/ReStudio "restudio/v<version>" "$(git rev-parse HEAD)" "$build" "$dist"/*
+SIGNED=true fork/publish-release.sh onuragtas/ReStudio "restudio/v<version>" "$(git rev-parse HEAD)" "$build" "$dist"/*
 ```
 
-The script creates the tag and the release, then it updates `updates.xml` on the `update-metadata` release.
+The script makes the update patches from the published release (`fork/make-patches.sh`), creates the tag and the release, then uploads the patches and `updates.xml` to the `update-metadata` release. The patch step needs Java 11 or later, for example `JAVA_HOME=/opt/homebrew/opt/openjdk@25`, and about 7 GB of free disk.
 
 ## 7. Check the result
 

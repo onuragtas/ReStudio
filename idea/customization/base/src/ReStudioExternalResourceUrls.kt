@@ -11,12 +11,13 @@ import com.intellij.util.Urls
  * The IDE has no JetBrains support form, feedback form or "What's New" page.
  * The help topics stay on the IntelliJ IDEA help site, because the IDE features are the same.
  * The base class reads the update metadata URL from the `idea.updates.url` property. `ReStudioBranding` in `build/src` sets it.
+ * The update patches are on the `update-metadata` release, next to `updates.xml`. `fork/make-patches.sh` makes them.
  */
 internal class ReStudioExternalResourceUrls : BaseJetBrainsExternalProductResourceUrls() {
   private val repository: Url = Urls.newFromEncoded("https://github.com/onuragtas/ReStudio")
 
   override val basePatchDownloadUrl: Url
-    get() = repository.resolve("releases/download/")
+    get() = repository.resolve("releases/download/update-metadata/")
 
   override val youtrackProjectId: String
     get() = ""

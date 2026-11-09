@@ -217,9 +217,12 @@ jobs:
     needs: [distributions, dmg, smoke-test]
     if: github.event_name == 'push' || inputs.tag != ''
     steps:
+      # fork/make-patches.sh builds the updater from updater/ with Gradle and the Java of the runner.
       - uses: actions/checkout@v6.0.2
         with:
-          sparse-checkout: fork
+          sparse-checkout: |
+            fork
+            updater
 
       - name: Download the installers
         uses: actions/download-artifact@v7.0.0

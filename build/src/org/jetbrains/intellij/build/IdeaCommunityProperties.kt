@@ -37,6 +37,8 @@ internal fun createCommunityBuildContext(
     projectHome = projectHome,
     productProperties = IdeaCommunityProperties(COMMUNITY_ROOT.communityRoot),
     setupTracer = true,
+    // ReStudio: signs the macOS distribution on the build Mac, see ReStudioMacSigning
+    proprietaryBuildTools = ReStudioMacSigning.proprietaryBuildTools(),
     options = options,
     lifetime = lifetime,
   )

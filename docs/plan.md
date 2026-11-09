@@ -107,9 +107,13 @@ TypeScript 7 Go ile yeniden yazılmış sürüm ve `tsserver.js` içermez. Vite'
 
 - [ ] Resmi IntelliJ IDEA üzerine [LSP4IJ](https://github.com/redhat-developer/lsp4ij) kur; hazır şablonları (Go, HTML, CSS, TypeScript vb.) ve [user-defined language server](https://www.github.com/redhat-developer/lsp4ij/blob/main/docs/UserDefinedLanguageServer.md) ayarını kullan (fork'u beklemeye gerek yok)
 - [ ] .NET: `dotnet tool install --global roslyn-language-server --prerelease` ([NuGet](https://www.nuget.org/packages/roslyn-language-server.linux-x64)); yedek olarak [csharp-ls](https://github.com/razzmatazz/csharp-language-server); debug için [netcoredbg](https://github.com/samsung/netcoredbg)
-- [ ] Go: `gopls` + `dlv dap`
-- [ ] Frontend: vtsls (veya typescript-language-server), vscode-langservers-extracted, Vue LS, Angular LS, ESLint; debug için vscode-js-debug
-- [ ] PHP: Phpactor + vscode-php-debug adaptörüyle Xdebug
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): Roslyn ve netcoredbg kullanılıyor. csharp-ls yedeği yok.
+- [x] Go: `gopls` + `dlv dap`
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `go/lsp/GoplsServerFactory.kt`, `go/debug/DelveDescriptorFactory.kt` ve probe kayıtları var.
+- [x] Frontend: vtsls (veya typescript-language-server), vscode-langservers-extracted, Vue LS, Angular LS, ESLint; debug için vscode-js-debug
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): probe kayıtları ve `testdata/web/*` var. Plugin, vscode-langservers-extracted'dan sadece ESLint'i kullanıyor.
+- [x] PHP: Phpactor + vscode-php-debug adaptörüyle Xdebug
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `php/lsp/PhpactorServerFactory.kt`, `php/debug/PhpDebugDescriptorFactory.kt` ve probe kayıtları var.
 - [x] Flutter: fork build'inde Flutter ve Dart plugin'lerinin kurulup çalıştığını doğrula
   - Marketplace bu build için Dart 511.0.0 ve Flutter 98.0.0 veriyor. İkisi de hatasız yükleniyor. Dart SDK 3.13.7 bulunuyor ve analysis server çalışıyor.
   - Dart plugin'i platformun yerleşik LSP API'sini (`com.intellij.platform.lsp`) kullanıyor. Bu API açık kaynak build'de var. Faz 1'de LSP4IJ'ye alternatif olarak değerlendirilmeli.
@@ -209,13 +213,18 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [x] Gradle multi-module plugin reposu: `core` + dil modülleri; LSP4IJ'ye bağımlılık
   - 8 Kasım 2026: `core` ve `go` modülleri derleniyor, 9 test geçiyor. `core` her dil plugin'ine gömülü (embedded) content module olarak giriyor; `plugin.xml` içindeki `<content>` girdisi şart.
 - [ ] SDK bulucu: `dotnet`, `go`, `php`, `node`, `flutter` yollarını PATH'ten bul, ayar ekranında değiştirilebilsin
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `core/sdk/ToolLocator.kt` PATH'i ve sabit dizinleri arıyor. Ayar ekranı ve Flutter bulucusu yok.
 - [ ] Language server yöneticisi: sürümü sabitlenmiş server'ları ilk kullanımda kur (`dotnet tool`, `go install`, `npm`, `.phar`), güncellemeyi bilinçli yap
-- [ ] Ortak debug katmanı: bir run configuration'dan DAP adapter'ı başlatma (LSP4IJ DAP üzerine)
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): kurulum kodu yok. Araçlar sadece PATH'te ya da `~/.restudio-dev/tools` altında aranıyor.
+- [x] Ortak debug katmanı: bir run configuration'dan DAP adapter'ı başlatma (LSP4IJ DAP üzerine)
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `core/dap/DapLaunch.kt` ve `FileDebugAdapterFactory.kt`; dört dil de kullanıyor.
 - [ ] Ortak test adaptörü: dış test çıktısını (TRX, `go test -json`, JUnit XML) IntelliJ test penceresine bağlama
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): TRX, Vitest ve PHPUnit translator'ları yazılmış. Eksik: JUnit XML ve Flutter.
   - Ortak katman yazıldı (8 Kasım 2026): `core`'daki `TestEventTranslator` bir runner satırını id tabanlı TeamCity mesajlarına çeviriyor. Her dil sadece kendi translator'ını veriyor.
   - Go bitti: `go test -json` translator'ı alt testleri, skip, panic ve derleme hatasını işliyor. Go Test run configuration'ı LSP4IJ DAP configuration'ından türüyor. Run test penceresini açıyor, Debug Delve'i başlatıyor.
   - Açık: TRX, Vitest, PHPUnit ve Flutter translator'ları. Test penceresinden koda gitme (test locator).
-- [ ] Ortak gutter ikonları (▶ Run / Debug): LSP4IJ, LSP dillerinde PSI kurmadığı için bu ikonları koymuyor. `textDocument/documentSymbol` cevabından giriş noktalarını ve testleri bul. `RunLineMarkerContributor` ile ikonu koy, `RunConfigurationProducer` ile run configuration'ı üret. Her dil sadece kuralı verir: Go'da `package main` + `func main` ve `func TestX(t *testing.T)`, C#'ta `Main` ve `[Fact]`, PHP'de `test_` metotları, Dart'ta `main` ve `test()`.
+- [x] Ortak gutter ikonları (▶ Run / Debug): LSP4IJ, LSP dillerinde PSI kurmadığı için bu ikonları koymuyor. `textDocument/documentSymbol` cevabından giriş noktalarını ve testleri bul. `RunLineMarkerContributor` ile ikonu koy, `RunConfigurationProducer` ile run configuration'ı üret. Her dil sadece kuralı verir: Go'da `package main` + `func main` ve `func TestX(t *testing.T)`, C#'ta `Main` ve `[Fact]`, PHP'de `test_` metotları, Dart'ta `main` ve `test()`.
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): dört dilin dedektörü `core/entrypoints/` üzerinde çalışıyor.
   - Fork build'inde denendi (8 Kasım 2026): LSP4IJ ile Go dosyasında ▶ yok. Kullanıcı DAP run configuration'ını elle ekleyip launch JSON'unu yazmak zorunda. Delve şablonunun varsayılanı `"program": "${file}"`; kütüphane dosyasında bu ayar çalışmıyor.
   - Go prototipi yazıldı (8 Kasım 2026). Giriş noktalarını şimdilik regex buluyor, `documentSymbol` değil. Sebep: ikon gopls başlamadan görünmeli.
   - TextMate dosyası tek bir PSI leaf: TextMate parser'ı boş bir lexer kullanıyor. `RunLineMarkerContributor` bu yüzden sadece ilk satıra ikon koyabilir. Çözüm: `core`'daki `EntryPointLineMarkerProvider` her giriş noktası için ayrı bir marker ekliyor. Run aksiyonları giriş noktasını `EntryPointLocation` içinde taşıyor.
@@ -227,6 +236,8 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
     - Oturum bir breakpoint'i ancak run configuration'ın `serverId` değeri doluysa gönderiyor. Boş `serverId` breakpoint'i çizik gösteriyor.
   - Açık: diğer dillerin kuralları.
 - [ ] Status bar'da server durumu, LSP/DAP trace log ekranı
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): LSP trace'i debug log açıkken dosyaya yazılıyor. Status bar widget'ı, trace ekranı ve DAP trace'i yok.
+- [ ] New Project sihirbazı: her dil kendi proje şablonunu versin (istek: Onur, 10 Kasım 2026). Python, Dart ve Flutter kendi kayıtlarını yapıyor. ReStudio-langs'teki dört modülün hiçbiri `moduleBuilder` ya da `newProjectWizard.*` kaydetmiyor; bu yüzden Go, .NET, PHP ve web dilleri sihirbazda yok.
 
 **Bitti kriteri:** Yeni bir dil eklemek = server tanımı + kurulum tarifi + run/debug/test adaptörü; ortak kod tekrar yazılmıyor.
 
@@ -235,14 +246,16 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] Roslyn LS entegrasyonu; özel mesajlar (solution/proje yükleme, `restore` isteği)
 - [ ] `.sln`/`.slnx`/`.csproj` okuma (`dotnet msbuild -getProperty/-getItem`), proje → modül eşleme, solution görünümü
 - [ ] `dotnet build`/`run` run configuration'ı, `launchSettings.json`, tıklanabilir build hataları
-- [ ] netcoredbg ile debug ve attach
+- [x] netcoredbg ile debug ve attach
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `dotnet/debug/` ve `DotnetAttach*` dosyaları.
   - İlk dilim (8 Kasım 2026): `dotnet` plugin'i. Roslyn LS `solution/open` ile yükleniyor. `Main` ve top-level statements için ▶ var. Run `dotnet run`, Debug ise `dotnet build` ve netcoredbg ile çalışıyor. Debug fork IDE'sinde elle denendi ve breakpoint'te duruyor.
   - Test debug'ı ve attach yazıldı (8 Kasım 2026). Test debug'ı `dotnet test`'i `VSTEST_HOST_DEBUG=1` ile başlatıyor, sonra netcoredbg bekleyen testhost'a bağlanıyor. "Attach to Process" listesi .NET süreçleri için netcoredbg sunuyor. Test debug'ı fork IDE'sinde elle denendi ve breakpoint'te duruyor.
   - LSP4IJ'de "adapter'ı başlat, sonra attach et" modu yok: ATTACH modu süreç başlatmıyor. Descriptor LSP4IJ'ye LAUNCH, DAP istemcisine ATTACH veriyor.
   - Platform, debug state'ini before-run adımlarından önce istiyor (`AsyncProgramRunner.execute`) ve her adıma environment'ın bir kopyasını veriyor. Before-run adımında oluşan bir değer, `executionId` ile ve oturum başlarken alınmalı.
   - Platform `*.cs` dosyalarını kendi yerleşik "C#" custom file type'ına bağlıyor (`defaultFileTypes.xml`, dil `TEXT`). C# için gutter provider'ı `TEXT` dili için de kayıtlı. Faz 7'de fork bu eşlemeyi kaldırıp C#'ı TextMate'e verebilir.
   - Roslyn code lens komutları (`dotnet.test.run`, `roslyn.client.peekReferences`) IDE aksiyonu olarak karşılanıyor. Başlıkları sistem dilinde geliyor.
-- [ ] `dotnet test` + TRX ile xUnit/NUnit/MSTest test penceresi, test gutter ikonları
+- [x] `dotnet test` + TRX ile xUnit/NUnit/MSTest test penceresi, test gutter ikonları
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `DotnetTestRunConfiguration`, `DotnetConsoleTranslator`, `TrxReport`.
   - İlk dilim: xUnit, NUnit ve MSTest metotlarında ▶ var. Teste çift tıklayınca koda gidiliyor.
   - Test ağacı konsol logger'ının sonuç satırlarından doluyor (`console;verbosity=normal`). VSTest bu satırları çalışma boyunca toplu yazıyor. TRX yedek: konsolda sonuç satırı yoksa ağacı o dolduruyor.
 - [ ] NuGet tool window (arama, ekleme, güncelleme)
@@ -253,8 +266,10 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 
 - [ ] gopls entegrasyonu; `go.mod`/`go.work` → modüller
 - [ ] `go build`/`go run` run configuration'ı
-- [ ] `go test -json` ile test penceresi ve gutter ikonları
-- [ ] Delve (`dlv dap`) ile debug
+- [x] `go test -json` ile test penceresi ve gutter ikonları
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `go/test/` dosyaları ve `GoLineMarkerProvider`.
+- [x] Delve (`dlv dap`) ile debug
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `DelveDescriptorFactory.kt`, `GoLaunches.kt`.
 - [ ] `gofmt`/`goimports` formatlama (gopls üzerinden)
 
 **Bitti kriteri:** `go.work` kullanan çok paketli bir Go servisi çalışıyor, test ve debug ediliyor.
@@ -262,8 +277,10 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 ### Faz 4: Frontend (4-5 hafta)
 
 - [ ] TS/JS için vtsls; TS 7 projelerinde projenin kendi `tsc --lsp` server'ı. HTML, CSS, JSON için vscode-langservers-extracted
-- [ ] Vue LS: `tsserver/request` mesajlarını `@vue/typescript-plugin` yüklü vtsls'ye köprüle (Faz 0 bulgusu). Angular LS, Tailwind CSS LS
-- [ ] ESLint LS ve Prettier ile formatlama
+- [x] Vue LS: `tsserver/request` mesajlarını `@vue/typescript-plugin` yüklü vtsls'ye köprüle (Faz 0 bulgusu). Angular LS, Tailwind CSS LS
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `web/lsp/VueBridge.kt`, `AngularServerFactory`, `TailwindServerFactory`. JSX'te Tailwind açık.
+- [x] ESLint LS ve Prettier ile formatlama
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `web/lsp/EslintSupport.kt`, `web/ide/PrettierFormattingService.kt`.
 - [ ] `package.json` script'leri için run configuration (npm, pnpm, yarn, bun); `node_modules/.bin` çözümü
 - [ ] vscode-js-debug ile Node ve Chrome debug
 - [ ] Vitest/Jest sonuçlarını test penceresine bağlama
@@ -285,7 +302,8 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [ ] `composer.json` → autoload ve kaynak kökleri
 - [ ] PHP script, built-in server ve `artisan` run configuration'ları
 - [ ] PHPUnit/Pest: JUnit XML çıktısıyla test penceresi
-- [ ] Xdebug: vscode-php-debug adaptörüyle debug
+- [x] Xdebug: vscode-php-debug adaptörüyle debug
+  - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `PhpDebugDescriptorFactory.kt`; `PhpLaunches.kt` `-dxdebug.*` argümanlarını veriyor.
 
 - İlk dilim (8 Kasım 2026): `php` plugin'i. Phpactor, PHPUnit testleri ve script'ler için ▶, script Run/Debug, PHPUnit Run (`--teamcity` ile test ağacı, `php_qn` locator) ve Debug (Xdebug). Beşi de fork IDE'sinde elle denendi.
   - `--teamcity` ad tabanlı mesaj yazıyor; test konsolu ad tabanlı modda çalışıyor.
@@ -338,7 +356,8 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Plugins ekranında Dart, Flutter ve LSP4IJ için güncelleme önerisi yok: `PluginUtils.isUpdateable`, `plugin.path` ile gelen plugin için `false` döner (test: `ReStudioPluginPathUpdateTest`). Bu değişiklik henüz bir installer'da denenmedi.
 - [x] Desteklenen dillerde plugin önerisi bandını kapat. Fork build'inde `.go` dosyası açılınca IDE "*.go files are supported by IntelliJ IDEA" diyor ve kapalı kaynak Go plugin'ini öneriyor.
   - Launcher `-Dpromo.ignore.suggested.ide=true` veriyor; `PluginsAdvertiser.kt` bu özelliği okuyor. IDE önerisi kapanıyor, Marketplace plugin önerileri kalıyor. `.go` dosyasıyla elle denenmedi.
-- [ ] GitHub Actions ile macOS/Linux installer build'i; standart runner yetmezse self-hosted runner
+- [x] GitHub Actions ile macOS/Linux installer build'i; standart runner yetmezse self-hosted runner
+  - Bitti (10 Kasım 2026): `fork-release.yml` Linux `.tar.gz` ve macOS aarch64 `.dmg`'yi 26 dakikada üretiyor (run 42699952867). Self-hosted runner gerekmedi.
   - Upstream'in `.github/workflows/ide_build_and_upload.yml`'ı bunu zaten yapıyor: `ubuntu-latest` üzerinde Docker ile build, `-aarch64.sit` üretimi, sonra `macos-latest` üzerinde `-aarch64.dmg`. Çıktılar imzasız.
   - Fork'ta değişmeden çalışmaz: `.github/actions/build_ide`, `JetBrains/android`'i `github.ref` ile checkout ediyor; bizim branch ve tag'lerimiz orada yok. Ref, `fork/UPSTREAM_BASE`'deki upstream tag'ine sabitlenmeli.
   - Upstream dosyalarına dokunmamak için ayrı bir `fork-release.yml` yaz: build adımlarını ondan çağır, `.dmg`'yi `gh release create` ile GitHub Releases'a yükle.
@@ -354,12 +373,14 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Yerel release tag'i oluşturunca `fork-release.yml` başlar. Yeni `guard` job'ı release'i bulur ve build'i atlar.
   - Mac, Linux smoke testini çalıştıramaz. Yerel release'te sadece macOS smoke testi çalışır.
 - [ ] IDE içinden otomatik güncelleme ("Update and Restart"), yama dosyalarıyla. Sıra (karar: Onur, 9 Kasım 2026): `v0.1.0` yamasız çıkar; yama ikinci release'te eklenir ve denenir.
+  - Yazıldı (10 Kasım 2026), denenmedi: `fork/make-patches.sh` önceki release'in `.tar.gz` ve `.sit` dosyalarını indirir ve `updater` (`./gradlew fatJar`) ile `--strict` yama üretir. macOS'ta kök `Contents`. `fork/publish-release.sh` yamaları `update-metadata`'ya yükler; `make-updates-xml.sh` `<patch from size exclusions>` satırını ekler. `basePatchDownloadUrl` artık `releases/download/update-metadata/`.
   - `ReStudioExternalResourceUrls.basePatchDownloadUrl` → `releases/download/update-metadata/`. IDE yamayı `IC-<eski>-<yeni>-patch[-aarch64]-<os>.jar` adıyla bu adreste arar (`computePatchUrl`).
   - Release job'ı önceki release'in Linux ve macOS dağıtımlarını indirir, açar ve `updater` (`updater/src/com/intellij/updater/Runner.java`, `create` komutu) ile her OS ve mimari için yama üretir. Yamalar `update-metadata` release'ine yüklenir.
   - `fork/make-updates-xml.sh` `<patch from="<eski build>" size="..."/>` satırlarını ekler.
   - Yama sadece önceki sürümden geçerli; daha eski sürümler "Download" ile tam installer alır.
   - Denenecek: macOS imzası eklendikten sonra yamanın imzalı dosyaları taşıması.
-- [ ] CI build süresini kısalt. Ölçüm (run 42620657587, `distributions` job'ı 57 dakika):
+- [x] CI build süresini kısalt. Ölçüm (run 42620657587, `distributions` job'ı 57 dakika):
+  - Bitti (10 Kasım 2026): Windows kalktı ve disk cache eklendi. Toplam run 57 dk'dan 26 dk'ya indi.
   - Bazel analiz 3 dk, Bazel derleme 24 dk (6535 action, cache yok).
   - Paketleme 22 dk. Bunun 16-18 dakikası Windows NSIS `.exe` sıkıştırması (`SetCompressor lzma`); x64 ve aarch64 aynı anda çalışır. Linux 3 dk, macOS 2 dk, traverseUI 1 dk.
   - Yapıldı (9 Kasım 2026): Seçenek 1'in disk cache kısmı. `fork-release.yml` container'ın `~/.cache` dizinini `$RUNNER_TEMP/ide-cache`'e bağlar ve `JetBrains/monorepo-bazel-cache`'i `actions/cache` ile saklar. Repository cache (indirmeler, yerelde 7,4 GB) sınıra sığmadığı için dışarıda. İlk run (42690626069) cache'i doldurdu: CI'daki disk cache 3,1 GB, kayıt 16 sn sürdü. İkinci run (42699952867) cache'i 19 sn'de geri yükledi. Build adımı 40,5 dk'dan 11,3 dk'ya, `distributions` job'ı 46 dk'dan yaklaşık 20 dk'ya indi.
@@ -370,6 +391,9 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Yapıldı (9 Kasım 2026, karar: Onur): ReStudio Windows dağıtımı yapmaz. Build `-Dintellij.build.skip.build.steps=windows_artifacts` ile Windows `.exe` ve zip adımını atlar; Windows smoke testi kalktı. Beklenen kazanç 16-18 dk. Seçenek 2 (NSIS `zlib`) artık gereksiz.
   - Ölçüldü (run 42690626069, cache yok): `distributions` job'ı 46 dk (önce 57 dk); Build adımı 40,5 dk. Log `stepsToSkip=windows_artifacts` gösterir. Linux smoke testi `bin/restudio.sh` ve `RESTUDIO_PROPERTIES` ile geçti.
 - [ ] (En sona bırakıldı, 9 Kasım 2026) macOS imzalama ve notarization (yapılmazsa README'de Gatekeeper notu: `xattr -dr com.apple.quarantine`). İmza için Apple Developer ID sertifikası ve notarization bilgileri GitHub secret olarak eklenmeli.
+  - Yazıldı (10 Kasım 2026): `build/src/.../ReStudioMacSigning.kt` yerel `codesign` ile imzalıyor (`SignNativeFileMode.PREPARE`). `RESTUDIO_MAC_SIGN_IDENTITY` yoksa build imzasız kalır. Notarization build'in kendi notary istemcisiyle yapılıyor (`APPLE_ISSUER_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY`). Ayarlar `~/.restudio-dev/signing.env`'de, repoda değil. JetBrains dosyalarında iki satır: `IdeaCommunityProperties.kt`, `OpenSourceCommunityInstallersBuildTarget.kt`.
+  - Denendi: macOS aarch64 build'inde imza adımı hatasız geçti; `.sit` Apple'a gönderildi. Notarization sonucu, staple ve `spctl` kontrolü henüz yok.
+  - Karar: imza sadece yerel release'te (Mac). CI imzasız kalır; sertifika GitHub'a gitmez.
 - [x] `LICENSE` (Apache 2.0), `NOTICE` ve üçüncü taraf lisans listesi
   - Kökteki `LICENSE.txt` Apache 2.0 değil: JetBrains, Haziran 2026'da onu kendi build'lerinin kullanım koşullarıyla değiştirdi. IDE'ye `fork/legal/LICENSE.txt` (Apache 2.0) ve `fork/legal/NOTICE.txt` giriyor. Üçüncü taraf kütüphane listesi build'in `license/third-party-libraries.json` dosyası.
   - Açık: Flutter plugin'i JxBrowser (TeamDev, ticari lisans) içeriyor. Plugin değişmeden dağıtılıyor ve NOTICE'te yazıyor; dağıtım hakkı ayrıca kontrol edilmeli.
