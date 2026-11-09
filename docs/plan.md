@@ -302,7 +302,8 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Dart, Flutter ve LSP4IJ bundled olarak yüklenemiyor. Platform, uyumluluk bağımlılıklarını sadece bundled olmayan eski stil plugin'lere ekliyor (`ProductPluginInitContext.kt`). Bundled Dart, `XLineBreakpointTypeBase` sınıfını bulamadı.
   - Bu üç plugin `Contents/restudio-plugins/` altında duruyor. Launcher onları `-Dplugin.path` ile yüklüyor, Marketplace kurulumunda olduğu gibi. `ProductLaunchRenderer.kt`'deki `IDE_HOME_PLACEHOLDER`, yolu işletim sisteminin makrosuna çeviriyor. Python bundled kalıyor.
   - Doğrulandı (macOS aarch64 `.dmg`): dört plugin de yükleniyor ve log'da `SEVERE` yok.
-  - Linux `tar.gz` ve Windows dağıtımı macOS'ta derlendi. Yerleşim doğru. `idea.sh` ve Linux `product-info.json` `$IDE_HOME`, `idea.bat` `%IDE_HOME%` kullanıyor. Bu iki sistemde IDE açılıp denenmedi. Windows `.exe` ve zip adımları macOS'ta atlanıyor.
+  - Linux `tar.gz` ve Windows dağıtımı macOS'ta derlendi. Yerleşim doğru. `idea.sh` ve Linux `product-info.json` `$IDE_HOME`, `idea.bat` `%IDE_HOME%` kullanıyor. Windows `.exe` ve zip adımları macOS'ta atlanıyor.
+  - Doğrulandı (CI run 42612172475, 9 Kasım 2026): `fork/smoke-test.sh`, `ubuntu-latest` (Xvfb) ve `windows-latest` (sessiz kurulum) üzerinde IDE'yi bir Python ve Dart projesiyle açtı. Dört plugin de yüklendi; plugin hatası yok. Bu run marka değişikliklerinden önceki kodu kullandı.
   - `build/tests/.../ReStudioPluginsTest.kt`: dizin kuralları ve üç işletim sisteminin makrosu için 6 test.
   - Kısıt: `plugin.path` ile gelen bir plugin, aynı ID'li daha yeni bir sürümü de geçersiz kılıyor (`pluginInitContextSelectCandidateSubset.kt`). Kullanıcı bu üç plugin'i Marketplace'ten güncelleyemez; güncelleme yeni bir ReStudio sürümüyle gelir. Faz 7'de Plugins ekranında güncelleme önerisi gizlenmeli.
 - [ ] Plugin sürümlerinin fork'un IDE sürümüyle uyumunu doğrula; uyumsuzlukta plugin'i kaynaktan derle
