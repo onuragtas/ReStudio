@@ -304,6 +304,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Doğrulandı (macOS aarch64 `.dmg`): dört plugin de yükleniyor ve log'da `SEVERE` yok.
   - Linux `tar.gz` ve Windows dağıtımı macOS'ta derlendi. Yerleşim doğru. `idea.sh` ve Linux `product-info.json` `$IDE_HOME`, `idea.bat` `%IDE_HOME%` kullanıyor. Windows `.exe` ve zip adımları macOS'ta atlanıyor.
   - Doğrulandı (CI run 42612172475, 9 Kasım 2026): `fork/smoke-test.sh`, `ubuntu-latest` (Xvfb) ve `windows-latest` (sessiz kurulum) üzerinde IDE'yi bir Python ve Dart projesiyle açtı. Dört plugin de yüklendi; plugin hatası yok. Bu run marka değişikliklerinden önceki kodu kullandı.
+  - Doğrulandı (CI run 42620657587, 9 Kasım 2026): markalı kod (commit 72b0ff28fb84) ile aynı smoke test Linux ve Windows üzerinde geçti. Dosya adları `ReStudio-263.7307.1003*`; build numarası `-Dbuild.number` ile geldi. Help menüsü linkleri (8b6b012be9b9) bu run içinde yok.
   - `build/tests/.../ReStudioPluginsTest.kt`: dizin kuralları ve üç işletim sisteminin makrosu için 6 test.
   - Kısıt: `plugin.path` ile gelen bir plugin, aynı ID'li daha yeni bir sürümü de geçersiz kılıyor (`pluginInitContextSelectCandidateSubset.kt`). Kullanıcı bu üç plugin'i Marketplace'ten güncelleyemez; güncelleme yeni bir ReStudio sürümüyle gelir. Faz 7'de Plugins ekranında güncelleme önerisi gizlenmeli.
 - [ ] Plugin sürümlerinin fork'un IDE sürümüyle uyumunu doğrula; uyumsuzlukta plugin'i kaynaktan derle
