@@ -40,8 +40,14 @@ object ReStudioBranding {
    * The VM options that the launchers add.
    * - `idea.updates.url`: the IDE reads the ReStudio update metadata, not the JetBrains metadata.
    * - `promo.ignore.suggested.ide`: the editor does not suggest a JetBrains IDE for a file type.
+   * - `idea.ultimate.features.hints.enabled`: no IntelliJ IDEA Ultimate promotions, for example the locked Spring
+   *   generator in New Project and the Database, Kubernetes and Profiler pages in the settings (`java/java-promo`).
    */
-  val VM_OPTIONS: List<String> = listOf("-Didea.updates.url=$UPDATES_URL", "-Dpromo.ignore.suggested.ide=true")
+  val VM_OPTIONS: List<String> = listOf(
+    "-Didea.updates.url=$UPDATES_URL",
+    "-Dpromo.ignore.suggested.ide=true",
+    "-Didea.ultimate.features.hints.enabled=false",
+  )
 
   /** `fork/branding/make-images.swift` makes the files in this directory. */
   fun imagesDirectory(communityHome: Path): Path = communityHome.resolve("fork/branding/images")
