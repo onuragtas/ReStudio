@@ -14,6 +14,8 @@
 #
 # Usage: fork/make-patches.sh <repository> <new build> <dist> <out>
 # Needs: gh, Java 11 to 21 (JAVA_HOME or PATH). The updater uses Gradle 8.5, which does not run on Java 25.
+# UPDATER_HEAP: the heap of the updater, 5g by default. With 2g, the macOS patch from 0.1.0 to 0.1.1 failed with an
+# OutOfMemoryError. A GitHub macOS arm64 runner has 7 GB of memory.
 set -euo pipefail
 
 repository="$1"
@@ -73,7 +75,7 @@ for arch in "" -aarch64; do
       new_dir="$work/new"
     fi
     patch="$out/IC-$old_build-$build-patch$arch-$os.jar"
-    "$java" -Xmx2g -cp "$updater" com.intellij.updater.Runner create "$old_build" "$build" "$old_dir" "$new_dir" "$patch" \
+    "$java" "-Xmx${UPDATER_HEAP:-5g}" -cp "$updater" com.intellij.updater.Runner create "$old_build" "$build" "$old_dir" "$new_dir" "$patch" \
       --strict --jar="$updater" "${options[@]}"
     size=$(( ($(wc -c < "$patch") + 1048575) / 1048576 ))
     echo "$os $size" >> "$out/patches.txt"
