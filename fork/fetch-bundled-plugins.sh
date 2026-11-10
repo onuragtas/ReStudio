@@ -30,6 +30,17 @@ while IFS=$'\t' read -r id update version sha256 license mode; do
     exit 1
   fi
   unzip -q "$zip" -d "$target/$mode"
+  # LSP4IJ copies its TextMate grammar to <plugin>/bundles/<version> at the first start, if it is not there.
+  # The signed macOS app is read-only, so the copy fails and breaks the signature. The build puts the copy there.
+  if [[ "$id" == "com.redhat.devtools.lsp4ij" ]]; then
+    bundles="$target/$mode/lsp4ij/bundles/$version"
+    mkdir -p "$bundles"
+    for jar in "$target/$mode"/lsp4ij/lib/*.jar; do
+      unzip -q -o "$jar" 'textmate/*' -d "$bundles.tmp" 2> /dev/null || true
+    done
+    cp -R "$bundles.tmp/textmate/." "$bundles/"
+    rm -rf "$bundles.tmp"
+  fi
   echo "$id $version ($license, $mode)"
 done < "$list"
 
