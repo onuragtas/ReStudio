@@ -215,7 +215,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - 8 Kasım 2026: `core` ve `go` modülleri derleniyor, 9 test geçiyor. `core` her dil plugin'ine gömülü (embedded) content module olarak giriyor; `plugin.xml` içindeki `<content>` girdisi şart.
 - [x] SDK bulucu: `dotnet`, `go`, `php`, `node`, `flutter` yollarını PATH'ten bul, ayar ekranında değiştirilebilsin
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `core/sdk/ToolLocator.kt` PATH'i ve sabit dizinleri arıyor. Ayar ekranı ve Flutter bulucusu yok.
-  - Yazıldı (10 Kasım 2026, ReStudio-langs fe516fb), derlendi, test edilmedi: Settings > Languages & Frameworks > ReStudio Tools her aracın yolunu gösterir ve değiştirir. Diller araçlarını `toolProvider` extension point'iyle kaydeder. Flutter SDK bulucusu eklendi.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs fe516fb), derlendi. Kullanıcı arayüzde kontrol etti (10 Kasım 2026, ReStudio-langs 693e683 ile Tools grubuna taşındı): Settings > Tools > ReStudio Tools her aracın yolunu gösterir ve değiştirir. Diller araçlarını `toolProvider` extension point'iyle kaydeder. Flutter SDK bulucusu eklendi.
 - [ ] Language server yöneticisi: sürümü sabitlenmiş server'ları ilk kullanımda kur (`dotnet tool`, `go install`, `npm`, `.phar`), güncellemeyi bilinçli yap
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): kurulum kodu yok. Araçlar sadece PATH'te ya da `~/.restudio-dev/tools` altında aranıyor.
   - Yazıldı (10 Kasım 2026, ReStudio-langs fe516fb), derlendi, test edilmedi: `ToolInstaller` sabit sürümü ilk kullanımda kurar (npm, `go install`, `dotnet tool`, SHA-256 kontrollü indirme); önce kullanıcıya sorar. Henüz hiçbir dil modülü çağırmıyor.
@@ -241,9 +241,9 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Açık: diğer dillerin kuralları.
 - [x] Status bar'da server durumu, LSP/DAP trace log ekranı
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): LSP trace'i debug log açıkken dosyaya yazılıyor. Status bar widget'ı, trace ekranı ve DAP trace'i yok.
-  - Yazıldı (10 Kasım 2026, ReStudio-langs fe516fb), derlendi, test edilmedi: Status bar widget'ı LSP4IJ server'larını gösterir; Help > Diagnostic Tools > Open LSP Trace. DAP trace'i yok.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs fe516fb), derlendi. Kullanıcı arayüzde kontrol etti (10 Kasım 2026): Status bar widget'ı LSP4IJ server'larını gösterir; Help > Diagnostic Tools > Open LSP Trace. DAP trace'i yok. Sunucu yokken widget `LSP 0/0` gösterir (693e683).
 - [x] New Project sihirbazı: her dil kendi proje şablonunu versin (istek: Onur, 10 Kasım 2026). Python, Dart ve Flutter kendi kayıtlarını yapıyor. ReStudio-langs'teki dört modülün hiçbiri `moduleBuilder` ya da `newProjectWizard.*` kaydetmiyor; bu yüzden Go, .NET, PHP ve web dilleri sihirbazda yok.
-  - Yazıldı (10 Kasım 2026, ReStudio-langs a29be74, 4a23591, 87b9118, 08eb06c), derlendi, test edilmedi: Go (`go mod init`), .NET (console, classlib, xunit), web (Vite React/Vue/vanilla, Node.js) ve PHP (Composer, Laravel) generator'ları `newProjectWizard.generator` ile kayıtlı.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs a29be74, 4a23591, 87b9118, 08eb06c), derlendi. Kullanıcı arayüzde kontrol etti (10 Kasım 2026): Go (`go mod init`), .NET (console, classlib, xunit), web (Vite React/Vue/vanilla, Node.js) ve PHP (Composer, Laravel) generator'ları `newProjectWizard.generator` ile kayıtlı.
 
 - Test (10 Kasım 2026, ReStudio-langs dfa2265): `./gradlew test` 72 testin hepsini geçti (Go 21, .NET 25, web 18, PHP 8). İlk çalıştırmada 32 test düştü: core'un `messages/CoreBundle.properties` dosyası platformun aynı adlı dosyasını gizliyordu; ad `ReStudioCoreBundle` oldu. Fork build'i (263.7307) beş plugin ve LSP4IJ ile Go projesini açtı ve kapattı; log'da `SEVERE` ve plugin uyarısı yok. Elle denenmedi: New Project ekranları, ReStudio Tools ayarları, kurulum bildirimi, status bar widget'ı, NuGet penceresi ve yeni run configuration'lar.
 
@@ -279,7 +279,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [x] gopls entegrasyonu; `go.mod`/`go.work` → modüller
   - Yazıldı (10 Kasım 2026, ReStudio-langs a29be74), derlendi, test edilmedi: `go.work` `use` dizinleri content root olur; `modules.txt`'li `vendor/` exclude edilir.
 - [x] `go build`/`go run` run configuration'ı
-  - Yazıldı (10 Kasım 2026, ReStudio-langs a29be74), derlendi, test edilmedi: Yeni "Go Application" tipi `go build` ile çalıştırır; `file.go:line` link olur. Debug Delve ile kalır.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs a29be74), derlendi. Kullanıcı arayüzde kontrol etti (10 Kasım 2026): Yeni "Go Application" tipi `go build` ile çalıştırır; `file.go:line` link olur. Debug Delve ile kalır.
 - [x] `go test -json` ile test penceresi ve gutter ikonları
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `go/test/` dosyaları ve `GoLineMarkerProvider`.
 - [x] Delve (`dlv dap`) ile debug
@@ -300,9 +300,9 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [x] `package.json` script'leri için run configuration (npm, pnpm, yarn, bun); `node_modules/.bin` çözümü
   - Yazıldı (10 Kasım 2026, ReStudio-langs 87b9118), derlendi, test edilmedi: `node_modules/.bin` PATH'te ilk sırada.
 - [x] vscode-js-debug ile Node ve Chrome debug
-  - Yazıldı (10 Kasım 2026, ReStudio-langs 87b9118), derlendi, test edilmedi: "Chrome (js-debug)" run configuration'ı. Gutter'dan üretilmiyor.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 87b9118), derlendi. Kullanıcı arayüzde kontrol etti (10 Kasım 2026): "Chrome (js-debug)" run configuration'ı. Gutter'dan üretilmiyor.
 - [x] Vitest/Jest sonuçlarını test penceresine bağlama
-  - Yazıldı (10 Kasım 2026, ReStudio-langs 87b9118), derlendi, test edilmedi: Jest run configuration'ı, gutter ve TeamCity reporter'ı.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 87b9118), derlendi. Kullanıcı arayüzde kontrol etti (10 Kasım 2026): Jest run configuration'ı, gutter ve TeamCity reporter'ı.
 
 - İlk dilim (9 Kasım 2026): `web` plugin'i. vtsls (TS/JS), Angular LS ve Tailwind LS (sadece o projelerde, document matcher ile), `package.json` script'leri için ▶ (Run paket yöneticisiyle, Debug js-debug ile), Vitest için ▶ (Run canlı test ağacı, Debug js-debug ile). Fork IDE'sinde elle denendi: vtsls hover ve completion, `npm run dev`, Vitest Run ve Debug çalışıyor.
   - js-debug her Node sürecini `startDebugging` ile alt oturum olarak açıyor; LSP4IJ bunu destekliyor (probe: js-debug-npm, js-debug-vitest).
@@ -322,9 +322,9 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [x] `composer.json` → autoload ve kaynak kökleri
   - Yazıldı (10 Kasım 2026, ReStudio-langs 08eb06c), derlendi, test edilmedi: psr-4, psr-0 ve classmap kaynak ve test kökü olur; `vendor/` exclude edilir ve library olarak eklenir.
 - [x] PHP script, built-in server ve `artisan` run configuration'ları
-  - Yazıldı (10 Kasım 2026, ReStudio-langs 08eb06c), derlendi, test edilmedi: `php -S` (Xdebug ile Debug) ve `artisan` run configuration'ları. `artisan serve` Debug'ı web isteklerinde durmaz.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 08eb06c), derlendi. Kullanıcı arayüzde kontrol etti (10 Kasım 2026): `php -S` (Xdebug ile Debug) ve `artisan` run configuration'ları. `artisan serve` Debug'ı web isteklerinde durmaz.
 - [x] PHPUnit/Pest: JUnit XML çıktısıyla test penceresi
-  - Yazıldı (10 Kasım 2026, ReStudio-langs 08eb06c), derlendi, test edilmedi: Pest run configuration'ı, gutter ve locator. PHPUnit JUnit XML yerine `--teamcity` kullanıyor.
+  - Yazıldı (10 Kasım 2026, ReStudio-langs 08eb06c), derlendi. Kullanıcı arayüzde kontrol etti (10 Kasım 2026): Pest run configuration'ı, gutter ve locator. PHPUnit JUnit XML yerine `--teamcity` kullanıyor.
 - [x] Xdebug: vscode-php-debug adaptörüyle debug
   - Kodla karşılaştırıldı (10 Kasım 2026, ReStudio-langs edabdd0): `PhpDebugDescriptorFactory.kt`; `PhpLaunches.kt` `-dxdebug.*` argümanlarını veriyor.
 
