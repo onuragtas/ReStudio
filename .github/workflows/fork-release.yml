@@ -186,6 +186,8 @@ jobs:
     needs: distributions
     timeout-minutes: 240
     strategy:
+      # The notarization of one arch takes about 40 minutes. A failure of the other arch must not cancel it.
+      fail-fast: false
       matrix:
         arch: ['', '-aarch64']
     env:
@@ -196,6 +198,7 @@ jobs:
       - uses: actions/checkout@v6.0.2
         with:
           sparse-checkout: |
+            .github/actions/fork-upload
             fork
             platform/build-scripts/tools/mac/scripts
 
