@@ -2,6 +2,11 @@
 package org.jetbrains.intellij.build
 
 import kotlinx.collections.immutable.PersistentMap
+import org.jetbrains.intellij.build.io.AddDirEntriesMode
+import org.jetbrains.intellij.build.io.PackageIndexBuilder
+import org.jetbrains.intellij.build.io.ZipEntryProcessorResult
+import org.jetbrains.intellij.build.io.readZipFile
+import org.jetbrains.intellij.build.io.writeZipUsingTempFile
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
@@ -88,7 +93,8 @@ private class LocalCodesignTool(private val identity: String) : SignTool {
       codesign(listOf(app), entitlements)
       run(listOf("codesign", "--verify", "--deep", "--strict", app.toString()))
       Files.delete(archive)
-      run(listOf("ditto", "-c", "-k", "--sequesterRsrc", "--keepParent", app.toString(), archive.toString()))
+      // No resource forks: --sequesterRsrc adds a __MACOSX directory, and staple.sh expects one entry in the archive.
+      run(listOf("ditto", "-c", "-k", "--norsrc", "--keepParent", app.toString(), archive.toString()))
     }
     finally {
       dir.toFile().deleteRecursively()
@@ -121,11 +127,27 @@ private class LocalCodesignTool(private val identity: String) : SignTool {
         val unsigned = names.map(dir::resolve).filter { isMachO(it) && !hasOwnSignature(it) }
         if (unsigned.isNotEmpty()) {
           codesign(unsigned, entitlements)
-          run(listOf("zip", "-q", jar.toString()) + unsigned.map { dir.relativize(it).toString() }, workDir = dir)
+          replaceEntries(jar, unsigned.associateBy { dir.relativize(it).toString().replace('\\', '/') })
         }
       }
       finally {
         dir.toFile().deleteRecursively()
+      }
+    }
+  }
+
+  /**
+   * Writes [jar] again with the [replacements]. A JAR of the IDE has an `__index__` entry with the position of each entry,
+   * so an in-place update gives a broken JAR. This is the same way as `copyZipReplacing` in the build scripts.
+   */
+  private fun replaceEntries(jar: Path, replacements: Map<String, Path>) {
+    val packageIndexBuilder = PackageIndexBuilder(AddDirEntriesMode.NONE)
+    writeZipUsingTempFile(jar, packageIndexBuilder) { zipWriter ->
+      readZipFile(jar) { name, dataSupplier ->
+        packageIndexBuilder.addFile(name)
+        val replacement = replacements[name]
+        if (replacement != null) zipWriter.file(name, replacement) else zipWriter.uncompressedData(name, dataSupplier())
+        ZipEntryProcessorResult.CONTINUE
       }
     }
   }
