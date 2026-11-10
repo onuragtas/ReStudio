@@ -5,7 +5,7 @@ description: Build the ReStudio Linux and macOS installers on the local Mac and 
 
 # ReStudio local release
 
-The Mac builds the Linux and macOS installers for x64 and aarch64 in one build. Then the Mac publishes them as a GitHub release, and it publishes `updates.xml` for the in-IDE update check. The CI workflow `.github/workflows/fork-release.yml` does the same work on GitHub runners. The two use the same scripts in `fork/`.
+The Mac builds the Linux installers for x64 and aarch64 and the macOS installers in one build. ReStudio publishes only the Apple silicon (aarch64) macOS installers (decision of 10 November 2026). Then the Mac publishes them as a GitHub release, and it publishes `updates.xml` for the in-IDE update check. The CI workflow `.github/workflows/fork-release.yml` does the same work on GitHub runners. The two use the same scripts in `fork/`.
 
 Since 10 November 2026, the default release path is the CI workflow. It signs and notarizes the macOS installers with the GitHub secrets (`fork/sign-mac.sh`). The upload from the Mac took 28 minutes for the first release. Use this skill only when the CI cannot make the release.
 
@@ -47,8 +47,9 @@ export APPLE_PRIVATE_KEY="$(cat "$RESTUDIO_NOTARY_KEY_FILE")"
 The build writes the installers to `out/idea-ce/artifacts`. A name without `-aarch64` is the x64 installer.
 
 - `ReStudio-$build.tar.gz` and `ReStudio-$build-aarch64.tar.gz`: Linux
-- `ReStudio-$build.dmg` and `ReStudio-$build-aarch64.dmg`: macOS
-- `ReStudio-$build.sit` and `ReStudio-$build-aarch64.sit`: macOS, as a zip archive
+- `ReStudio-$build-aarch64.dmg`: macOS
+- `ReStudio-$build-aarch64.sit`: macOS, as a zip archive
+- The build also makes the Intel macOS installers. Do not publish them.
 
 ## 3. Check the installers
 
@@ -67,11 +68,10 @@ The smoke test must print "The IDE loaded the bundled plugins without errors". I
 
 ```bash
 dist=$(mktemp -d)
-for arch in "" -aarch64; do for ext in tar.gz dmg sit; do
-  file="ReStudio-$build$arch.$ext"
+for file in "ReStudio-$build.tar.gz" "ReStudio-$build-aarch64".{tar.gz,dmg,sit}; do
   cp "$artifacts/$file" "$dist/"
   (cd "$dist" && shasum --algorithm 256 --binary "$file" > "$file.sha256")
-done; done
+done
 ls -l "$dist"
 ```
 
@@ -89,7 +89,7 @@ The script makes the update patches from the published release (`fork/make-patch
 
 ## 7. Check the result
 
-- `gh release view "restudio/v<version>" --repo onuragtas/ReStudio` shows twelve files: six installers and their `.sha256` files.
+- `gh release view "restudio/v<version>" --repo onuragtas/ReStudio` shows eight files: four installers and their `.sha256` files.
 - `gh release download update-metadata --repo onuragtas/ReStudio --pattern updates.xml --output -` shows the new build number.
 - The tag push starts `fork-release.yml`. Its `guard` job finds the release and skips the build. Check it with `gh run list --repo onuragtas/ReStudio --workflow fork-release.yml --limit 1`. Cancel the run if it builds.
 

@@ -5,7 +5,7 @@
 # update-metadata release too (ReStudioExternalResourceUrls.basePatchDownloadUrl).
 # The release workflow and the local release (.claude/skills/restudio-release) use this script.
 #
-# Usage: [SIGNED=true] fork/publish-release.sh <repository> <tag> <commit> <build number> <file>...
+# Usage: [SIGNED=true] [PATCHES_DIR=<dir>] fork/publish-release.sh <repository> <tag> <commit> <build number> <file>...
 #   <tag> is restudio/v<version>, for example restudio/v0.1.0.
 set -euo pipefail
 
@@ -15,8 +15,14 @@ commit="$3"
 build="$4"
 shift 4
 
-patches="$(mktemp -d)"
-"$(dirname "$0")/make-patches.sh" "$repository" "$build" "$(dirname "$1")" "$patches"
+# PATCHES_DIR: the patches are ready, for example from fork/merge-patches.sh in the release workflow.
+# Without it, the script makes the patches for all the files here.
+if [ -n "${PATCHES_DIR:-}" ]; then
+  patches="$PATCHES_DIR"
+else
+  patches="$(mktemp -d)"
+  "$(dirname "$0")/make-patches.sh" "$repository" "$build" "$(dirname "$1")" "$patches"
+fi
 
 # SIGNED=true: the macOS installers are signed and notarized (ReStudioMacSigning in build/src).
 if [ "${SIGNED:-false}" = true ]; then
@@ -50,7 +56,7 @@ gh release create "$tag" "$@" \
 
 updates="$(mktemp -d)/updates.xml"
 "$(dirname "$0")/make-updates-xml.sh" "$build" "${tag#restudio/v}" \
-  "https://github.com/$repository/releases/tag/$tag" "$patches/patches.txt" > "$updates"
+  "https://github.com/$repository/releases/tag/$tag" "$([ -f "$patches/patches.txt" ] && echo "$patches/patches.txt")" > "$updates"
 cat "$updates"
 if ! gh release view update-metadata --repo "$repository" > /dev/null 2>&1; then
   gh release create update-metadata --repo "$repository" --target "$commit" \
