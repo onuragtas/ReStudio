@@ -7,6 +7,8 @@ description: Build the ReStudio Linux and macOS installers on the local Mac and 
 
 The Mac builds the Linux and macOS installers for x64 and aarch64 in one build. Then the Mac publishes them as a GitHub release, and it publishes `updates.xml` for the in-IDE update check. The CI workflow `.github/workflows/fork-release.yml` does the same work on GitHub runners. The two use the same scripts in `fork/`.
 
+Since 10 November 2026, the default release path is the CI workflow. It signs and notarizes the macOS installers with the GitHub secrets (`fork/sign-mac.sh`). The upload from the Mac took 28 minutes for the first release. Use this skill only when the CI cannot make the release.
+
 A release is public. Get the confirmation of the user for the tag before step 6. A confirmation for an earlier release does not apply to a new one.
 
 ## 1. Check the state
