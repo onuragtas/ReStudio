@@ -447,6 +447,42 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 
 **Bitti kriteri:** GitHub Releases'ta indirilebilir installer var; kurulunca kendi adıyla açılıyor, desteklenen diller hazır geliyor, resmi IntelliJ ile yan yana çalışıyor ve bir upstream merge'ü baştan sona yapılmış.
 
+### Faz 8: Temel dil özelliklerinin kalitesi (süre ölçümden sonra belirlenecek)
+
+Konu: definition, hover, completion, references, rename, formatting ve diagnostics. Dil zekâsını language server'lar veriyor; bu faz motoru değil, ReStudio'nun motoru nasıl kullandığını iyileştirir: ayarlar, ek araçlar, istemci davranışı ve test. Kapsam dışı kalan şey değişmedi: Rider, GoLand, PhpStorm seviyesinde bir inspection ve refactoring kataloğu yazılmaz. Flutter/Dart bu fazın dışında: LSP değil, Dart ekibinin IntelliJ plugin'i kullanılıyor.
+
+Bugünkü bilgi Faz 0 tablosundaki tek dosyalık probe ölçümü. Özelliklerin IDE içinde, gerçek projelerde nasıl çalıştığı ölçülmedi. Bu yüzden ilk iş ölçüm.
+
+**Ölçüm (önce bu)**
+
+- [ ] Her dil için gerçek bir açık kaynak proje seç (örnek: Go için bir CLI, .NET için çok projeli bir solution, PHP için bir Laravel uygulaması). `testdata/` bu iş için çok küçük.
+- [ ] Her proje ve her özellik için beklenen sonucu yazılı 20-50 vaka hazırla: "bu konumda definition şu dosyaya gider", "bu rename şu dosyaları değiştirir", "bu dosyada şu hata var".
+- [ ] Vakaları iki seviyede otomatik çalıştır: `lsp-probe` ile sunucuya doğrudan, ve sandbox IDE'de LSP4IJ üzerinden. İki sonuç farklıysa hata istemcide veya bizim kodumuzdadır (örnek: `didCreateFiles` ve gopls, 10 Kasım 2026).
+- [ ] Süreleri ölç: ilk açılış, completion p50/p95, büyük dosyada diagnostics.
+- [ ] Sonuçları özellik × dil tablosu olarak bu dosyaya yaz. Her langs release'inde vakaları CI'de çalıştır, gerilemeyi yakala.
+
+**Ortak (bütün LSP dilleri)**
+
+- [ ] Definition / references: kütüphane kaynağına gitmenin her dilde çalıştığını doğrula (Go module cache, NuGet, `vendor/`). Kütüphane dosyalarını salt okunur aç.
+- [ ] References: sonuçların IntelliJ'in Find Usages penceresinde gruplu çıktığını doğrula; okuma/yazma ayrımı yoksa ekle (`documentHighlight` türlerinden).
+- [ ] Hover: Markdown'ın, kod bloklarının ve linklerin Quick Documentation penceresinde doğru göründüğünü doğrula; signature help'in parametre geçişinde açıldığını doğrula.
+- [ ] Completion: büyük listeleri istemcide sınırla (Tailwind 23.632 öğe); `completionItem/resolve` ile ayrıntıyı geç yükle; import edilmemiş sembollerin önerisini her dilde aç (gopls `completeUnimported`, Roslyn "unimported namespaces", vtsls `includeCompletionsForModuleExports`).
+- [ ] Completion: her dil için IntelliJ live template'leri ekle (Go `iferr`, `for`; C# `prop`, `ctor`; PHP `fore`). Az iş, görünür kazanç.
+- [ ] Rename: uygulamadan önce `WorkspaceEdit` önizlemesi göster (dosya listesi ve değişiklikler). Kütüphane, `vendor/` ve module cache altındaki düzenlemeleri her dilde engelle; bugün sadece PHP'de var.
+- [ ] Rename: sunucu `prepareRename` ile reddederse sebebini kullanıcıya göster.
+- [ ] Formatting: `.editorconfig` ve IntelliJ Code Style'dan girintiyi `FormattingOptions`'a geçir (Faz 0 bulgusu: aksi hâlde dosyanın tamamı değişiyor). Format on save, sadece değişen satırları formatlama seçeneği.
+- [ ] Diagnostics: kapalı dosyaların hatalarını da Problems penceresinde göster (Roslyn `workspace/diagnostic`, gopls push). Sunucunun önerdiği "bu uyarıyı kapat" quick fix'lerinin çıktığını doğrula.
+- [ ] Diagnostics: sunucu ayarlarını (açık analizler, seviye) her dilin ayar sayfasında göster; `workspace/configuration` ile gönder.
+
+**Dil başına**
+
+- [ ] Go: gopls `staticcheck` analizlerini ve seçili `analyses` ayarlarını aç; golangci-lint'i isteğe bağlı ek diagnostics kaynağı olarak bağla (`.golangci.yml` varsa).
+- [ ] .NET: derlenmiş kütüphaneler için decompile edilmiş kaynağa gitme (Roslyn'in bu özelliği LSP üzerinden çalışıyor mu, ölç). Tip adı değişince dosya adını da değiştir (C# kuralı; Roslyn dosyayı yeniden adlandırmıyor). Diagnostic mesajlarını IDE'nin dilinde iste (Faz 0 bulgusu: mesajlar sistem dilinde geliyor). Projedeki NuGet analyzer'larının ve `.editorconfig` seviyelerinin uygulandığını doğrula.
+- [ ] PHP (en büyük açık): PHPStan veya Psalm'ı ek diagnostics kaynağı olarak bağla; Phpactor'un tip hatası yakalaması zayıf. Laravel için `barryvdh/laravel-ide-helper` stub'larını öner ve kullan (`view()` yanlış alarmı, facade'lar). Intelephense kullanıcısı için lisans anahtarı ayarı ekle; ücretli özellikler (rename, code action) lisansla açılır.
+- [ ] PHP: Phpactor'un definition ve completion kalitesini Laravel projesinde ölç; Intelephense ile karşılaştır, varsayılan sunucu kararını ölçüme göre ver.
+
+**Bitti kriteri:** Her LSP dili için ölçüm tablosu var, vakalar CI'de çalışıyor, ve her özellik ölçülen projede beklenen sonucu en az %90 veriyor. %90'ın altındaki her özellik için sebep (sunucu sınırı mı, bizim hatamız mı) yazılı.
+
 ## Repo yapısı ve Claude ile çalışma
 
 İki public GitHub reposu: ince bir fork ve asıl işin yapıldığı plugin reposu. Claude Code günlük olarak plugin reposunda, Faz 6-7 ve upstream merge'lerinde fork reposunda çalışır.
