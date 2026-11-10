@@ -179,9 +179,10 @@ jobs:
   #   RESTUDIO_MAC_SIGN_IDENTITY                     The certificate name, "Developer ID Application: <team> (<team ID>)".
   #   APPLE_ISSUER_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY  The App Store Connect API key. APPLE_PRIVATE_KEY is the .p8 content.
   mac:
-    # Not macos-latest: on 10 November 2026, GitHub had no free macOS arm64 runner twice in a row. codesign and the
-    # notarization do not depend on the arch of the runner. The .dmg script skips the launcher check on an other arch.
-    runs-on: macos-15-intel
+    # Apple silicon: the .dmg script checks the launcher only on the same arch. On macos-15-intel, hdiutil could not
+    # detach the image (10 November 2026). If GitHub has no free runner, the job waits 15 minutes and stops. Then run
+    # the failed jobs again.
+    runs-on: macos-latest
     needs: distributions
     timeout-minutes: 240
     strategy:
@@ -248,6 +249,11 @@ jobs:
           printf '%s\n' "$APPLE_PRIVATE_KEY" > "$APPLE_PRIVATE_KEY_FILE"
           fork/sign-mac.sh "dmg/$SIT" platform/build-scripts/tools/mac/scripts/entitlements.xml
           rm "$APPLE_PRIVATE_KEY_FILE"
+
+      # Spotlight indexes a mounted image, and then hdiutil can fail to detach it.
+      - name: Turn off Spotlight
+        shell: bash
+        run: sudo mdutil -a -i off || true
 
       - name: Build the .dmg
         shell: bash
