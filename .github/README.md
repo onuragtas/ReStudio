@@ -8,7 +8,7 @@ ReStudio is a free, open-source IDE for many languages. It is a fork of the
 
 ## Status
 
-ReStudio is in an early preview. The builds are not signed. Expect bugs.
+ReStudio is in an early preview. Expect bugs.
 
 ## Languages
 
@@ -17,9 +17,10 @@ ReStudio is in an early preview. The builds are not signed. Expect bugs.
 | Java, Kotlin | Full | The IntelliJ Platform |
 | Python | Full | The open-source Python plugin |
 | Dart, Flutter | Full | The Dart and Flutter plugins |
+| Go, C# (.NET), PHP, web (TypeScript, JavaScript, Vue, Angular, HTML, CSS) | Through language servers | [ReStudio-langs](https://github.com/onuragtas/ReStudio-langs) |
 | Other languages | Through language servers | [LSP4IJ](https://github.com/redhat-developer/lsp4ij) |
 
-The support for C#, Go, PHP and web languages comes from a separate plugin project. It is not in the preview builds yet.
+The language servers and debug adapters are separate tools. Settings > Tools > ReStudio Tools shows the tools that ReStudio found.
 
 ReStudio does not contain the closed-source features of the JetBrains IDEs.
 For example, it does not have the JetBrains support for JavaScript, TypeScript or Spring.
@@ -29,12 +30,8 @@ For example, it does not have the JetBrains support for JavaScript, TypeScript o
 Download the installer for your system from [GitHub Releases](https://github.com/onuragtas/ReStudio/releases).
 
 - **Linux:** extract the `.tar.gz` file and run `bin/restudio.sh`.
-- **macOS (Apple Silicon):** open the `.dmg` file and drag the app into Applications.
-  The app is not signed. Gatekeeper blocks it at the first start. Remove the quarantine flag once:
-
-  ```
-  xattr -dr com.apple.quarantine /Applications/ReStudio.app
-  ```
+- **macOS (Apple silicon):** open the `.dmg` file and drag the app into Applications.
+  The app is signed and notarized. ReStudio has no installer for Intel Macs.
 
 ReStudio keeps its settings apart from the JetBrains IDEs. You can install both on one computer.
 
@@ -42,7 +39,7 @@ ReStudio keeps its settings apart from the JetBrains IDEs. You can install both 
 
 The Plugins dialog connects to JetBrains Marketplace. The
 [JetBrains Marketplace terms](https://plugins.jetbrains.com/legal/terms-of-use) apply to that use.
-ReStudio puts Dart, Flutter and LSP4IJ into the IDE. You get the updates of these three plugins with a new ReStudio release.
+ReStudio puts Dart, Flutter, LSP4IJ and the ReStudio language plugins into the IDE. You get the updates of these plugins with a new ReStudio release.
 
 ## Build from source
 
