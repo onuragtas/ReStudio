@@ -1,5 +1,6 @@
 # Plugins that the ReStudio build puts into the IDE. fork/fetch-bundled-plugins.sh reads this file.
-# Columns: plugin ID, JetBrains Marketplace update ID, version, SHA-256 of the zip, license, load mode.
+# Columns: plugin ID, JetBrains Marketplace update ID or the URL of the zip, version, SHA-256 of the zip, license, load mode.
+# The ReStudio language plugins come from the releases of https://github.com/onuragtas/ReStudio-langs.
 # Load mode "bundled": the IDE loads the plugin as a bundled plugin.
 # Load mode "path": the IDE loads the plugin through the plugin.path property, as a plugin that is not bundled.
 # Use "path" for a legacy plugin (only <depends> tags) from a vendor other than JetBrains. The platform adds its
@@ -10,3 +11,8 @@ Dart	1212339	511.0.0	3c96609978476b489fb0b6704e0c9899a28eec594f09f1da16b2ada6822
 io.flutter	1212341	98.0.0	1d5f09a8b17ddf95bb89c6fa9835deb6f0dc89a5ac7d95c1b472c429bcecc65e	BSD-3-Clause	path
 PythonCore	1212274	263.7307.200	996f7d28f640692610150b84cb2f86f9304e91c584e3c6035e4f7337a90e3dda	Apache-2.0	bundled
 com.redhat.devtools.lsp4ij	1157565	0.21.0	2ed125cc36620545c226186587d36ca4a8fc7c3db85e1ee5dfe0946b973e6caa	EPL-2.0	path
+dev.restudio.core	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.1.0/core-0.1.0.zip	0.1.0	c35e377634d669fccfee01ae30406db59a0b2d6fcf7b3210742862689843fec2	ReStudio-langs	path
+dev.restudio.go	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.1.0/go-0.1.0.zip	0.1.0	f4f85b11daf1f752bd1d96e70106fb79bab16562ea14eec86244b5474a2ba9c1	ReStudio-langs	path
+dev.restudio.dotnet	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.1.0/dotnet-0.1.0.zip	0.1.0	9f8360212423029b1ee2f35693c9446b4c4fda17e8e1d85f343d66bdcdd007be	ReStudio-langs	path
+dev.restudio.web	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.1.0/web-0.1.0.zip	0.1.0	1bda65d97d486705dcb7a73fb8e5b206d5b5819bfe67889ffe40f6879338015f	ReStudio-langs	path
+dev.restudio.php	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.1.0/php-0.1.0.zip	0.1.0	0e0c558545761bb2affb925ee3e390ada5de1e69d2b38d9512f6df226537b1f5	ReStudio-langs	path

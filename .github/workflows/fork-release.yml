@@ -179,7 +179,9 @@ jobs:
   #   RESTUDIO_MAC_SIGN_IDENTITY                     The certificate name, "Developer ID Application: <team> (<team ID>)".
   #   APPLE_ISSUER_ID, APPLE_KEY_ID, APPLE_PRIVATE_KEY  The App Store Connect API key. APPLE_PRIVATE_KEY is the .p8 content.
   mac:
-    runs-on: macos-latest
+    # Not macos-latest: on 10 November 2026, GitHub had no free macOS arm64 runner twice in a row. codesign and the
+    # notarization do not depend on the arch of the runner. The .dmg script skips the launcher check on an other arch.
+    runs-on: macos-15-intel
     needs: distributions
     timeout-minutes: 240
     strategy:

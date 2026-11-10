@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Starts an installed IDE with a small Python and Dart project, waits for indexing, and closes the IDE.
-# It stops with an error if Dart, Flutter, LSP4IJ or Python does not load, or if one of them logs an error.
+# It stops with an error if Dart, Flutter, LSP4IJ, Python or a ReStudio language plugin does not load, or if one of them
+# logs an error.
 # The release workflow runs it on Linux.
 #
 # Usage: fork/smoke-test.sh <launcher command>
@@ -55,7 +56,8 @@ if [[ ! -f "$log" ]]; then
 fi
 
 loaded="$(awk '/Loaded (bundled|custom) plugins:/' "$log")"
-for id in "(Dart," "(io.flutter," "(com.redhat.devtools.lsp4ij," "(PythonCore,"; do
+for id in "(Dart," "(io.flutter," "(com.redhat.devtools.lsp4ij," "(PythonCore," "(dev.restudio.core," "(dev.restudio.go," \
+  "(dev.restudio.dotnet," "(dev.restudio.web," "(dev.restudio.php,"; do
   if [[ "$loaded" != *"$id"* ]]; then
     echo "The IDE did not load the plugin $id" >&2
     status=1
@@ -66,7 +68,7 @@ errors="$(awk '/ SEVERE - /' "$log")"
 if [[ -n "$errors" ]]; then
   echo "The log has errors:"
   echo "$errors"
-  if awk '/Plugin to blame: (Dart|Flutter|LSP4IJ|Python)|ClassNotFoundException|NoClassDefFoundError|PluginException/' <<< "$errors" | awk 'END { exit NR == 0 }'; then
+  if awk '/Plugin to blame: (Dart|Flutter|LSP4IJ|Python|ReStudio)|ClassNotFoundException|NoClassDefFoundError|PluginException/' <<< "$errors" | awk 'END { exit NR == 0 }'; then
     echo "A bundled plugin of ReStudio caused an error" >&2
     status=1
   fi

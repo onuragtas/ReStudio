@@ -22,7 +22,9 @@ while IFS=$'\t' read -r id update version sha256 license mode; do
   zip="$cache/$id-$version.zip"
   if [[ ! -f "$zip" ]] || ! echo "$sha256  $zip" | shasum -a 256 -c --status; then
     echo "Downloading $id $version"
-    curl -sSfL --retry 5 -o "$zip.part" "https://plugins.jetbrains.com/plugin/download?updateId=$update"
+    # The second column is a Marketplace update ID, or the URL of a zip, for example a ReStudio-langs release.
+    if [[ "$update" == https://* ]]; then url="$update"; else url="https://plugins.jetbrains.com/plugin/download?updateId=$update"; fi
+    curl -sSfL --retry 5 -o "$zip.part" "$url"
     mv "$zip.part" "$zip"
   fi
   if ! echo "$sha256  $zip" | shasum -a 256 -c --status; then
