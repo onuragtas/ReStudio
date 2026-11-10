@@ -107,6 +107,7 @@ func text(_ string: String, size: CGFloat, weight: NSFont.Weight, color: NSColor
 }
 
 /// The splash screen. The IDE draws the progress bar at its bottom.
+/// The origin of the code and the trademark notice are in Help > About (ReStudioAboutDescription), not here.
 func splash(_ scale: Int) -> NSBitmapImageRep {
   bitmap(640 * scale, 400 * scale) { rect in
     let s = CGFloat(scale)
@@ -116,8 +117,6 @@ func splash(_ scale: Int) -> NSBitmapImageRep {
     text("ReStudio", size: 64 * s, weight: .bold, color: .white, at: NSPoint(x: 184 * s, y: 236 * s))
     text("An open-source IDE for many languages", size: 20 * s, weight: .regular,
          color: NSColor(white: 0.75, alpha: 1), at: NSPoint(x: 48 * s, y: 150 * s))
-    text("Built on the IntelliJ Platform open-source code. Not a JetBrains product.", size: 13 * s, weight: .regular,
-         color: NSColor(white: 0.55, alpha: 1), at: NSPoint(x: 48 * s, y: 40 * s))
   }
 }
 

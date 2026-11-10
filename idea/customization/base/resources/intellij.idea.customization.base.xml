@@ -10,6 +10,8 @@
                         overrides="true"/>
 
     <errorHandler implementation="com.intellij.idea.customization.base.ReStudioErrorReportSubmitter" order="first"/>
+    <!-- ReStudio: the origin and the trademark notice in Help > About. -->
+    <aboutPopupDescriptionProvider implementation="com.intellij.idea.customization.base.ReStudioAboutDescription"/>
 
     <applicationService serviceInterface="com.intellij.platform.ide.customization.ExternalProductResourceUrls"
                         serviceImplementation="com.intellij.idea.customization.base.ReStudioExternalResourceUrls"

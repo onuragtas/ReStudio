@@ -358,6 +358,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 ### Faz 7: Fork, marka ve public dağıtım (3-4 hafta)
 
 - [x] Ürün adı, ikonlar, splash, About ekranı ve ürün tanım dosyaları; arayüzde ve installer'da "IntelliJ" ve JetBrains logoları kalmasın
+  - 10 Kasım 2026: "Built on the IntelliJ Platform open-source code. Not a JetBrains product." splash'tan About ekranına taşındı (`ReStudioAboutDescription`), altına marka notu eklendi. Derlendi; About ekranı arayüzde kontrol edilmedi.
   - 9 Kasım 2026: Ad "ReStudio", vendor "ReStudio". Değerler `build/src/.../ReStudioBranding.kt` ve `IdeaApplicationInfo.xml`'de. Geçici ikon ve splash'i `fork/branding/make-images.swift` üretiyor; kalıcı logo gelince script tekrar çalıştırılır.
   - Doğrulandı (macOS aarch64 `.dmg`, build 263.7307.1000): `ReStudio.app`, bundle ID `io.github.onuragtas.restudio`, URL scheme `restudio`, artifact adı `ReStudio-<build>`. Smoke test geçti.
   - Vendor JetBrains olmayınca build'in `traverseUI` adımı düştü (boş consents listesi). `AppUIUtil.kt`'de tek satırlık düzeltme var.
