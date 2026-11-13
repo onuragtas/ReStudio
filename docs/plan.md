@@ -445,6 +445,8 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [x] Fork'un kökündeki `AGENTS.md`'yi fork'a göre sadeleştir: silinen `.agents/skills/` dosyalarına referanslar kalmasın, fork kuralları (JetBrains koduna dokunma, sadece marka/paketleme) eklensin
   - 9 Kasım 2026: `.agents/skills/` silinmemiş; `AGENTS.md`'nin başvurduğu dosyaların hepsi var. `AGENTS.md` değişmedi.
   - Fork kuralları `.ai/local.md`'de. `AGENTS.md` bu dosyayı `@./.ai/local.md` ile içe alıyor; upstream'de bu dosya yok, bu yüzden merge çakışması olmaz.
+- [ ] İlk açılış sihirbazı JetBrains IDE'lerinin (IntelliJ, Rider vb.) ayarlarını da import etsin
+  - Yazıldı (13 Kasım 2026), derlendi, IDE'de denenmedi: sihirbaz sadece `ReStudio` vendor dizinini tarıyordu. Artık `JetBrains` dizinini de tarıyor ve plugin dizinini oradan alıyor.
 
 **Bitti kriteri:** GitHub Releases'ta indirilebilir installer var; kurulunca kendi adıyla açılıyor, desteklenen diller hazır geliyor, resmi IntelliJ ile yan yana çalışıyor ve bir upstream merge'ü baştan sona yapılmış.
 

@@ -307,7 +307,7 @@ class JbImportServiceImpl(private val coroutineScope: CoroutineScope) : JbServic
     val parentDirs = listOf(
       PathManager.getConfigDir().parent,
       PathManager.getConfigDir().fileSystem.getPath(PathManager.getDefaultConfigPathFor("X")).parent
-    )
+    ).let { dirs -> (dirs + dirs.map { it.resolveSibling(JETBRAINS_VENDOR_DIR) }).distinct() } // ReStudio: also find the JetBrains IDEs
     val context = PluginDescriptorLoadingContext(getBuildNumberForDefaultDescriptorVersion = { PluginManagerCore.buildNumber })
     for (parentDir in parentDirs) {
       if (!parentDir.exists() || !parentDir.isDirectory()) {
@@ -370,7 +370,7 @@ class JbImportServiceImpl(private val coroutineScope: CoroutineScope) : JbServic
       return null
     }
     val fullNameWithVersion = "$fullName $ideVersion"
-    val pluginsDir = Path.of(PathManager.getDefaultPluginPathFor(confDir.name))
+    val pluginsDir = vendorPluginsDir(confDir) // ReStudio: the plugins of a JetBrains IDE are under the JetBrains directory
     val jbProductInfo = JbProductInfo(ideVersion, lastModified, confDir.name, fullNameWithVersion, ideName, confDir, pluginsDir)
     return jbProductInfo
   }

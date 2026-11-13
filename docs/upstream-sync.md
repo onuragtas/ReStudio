@@ -66,6 +66,7 @@ Her sync PR'ı merge edilmeden önce:
 | `idea/customization/base/intellij.idea.customization.base.iml` (ve üretilen `BUILD.bazel`) | Bir satır: `intellij.platform.core` bağımlılığı. `ReStudioErrorReportSubmitter` `ApplicationInfo` ve `PluginAware` için bunu ister. | — (Faz 7) |
 | `platform/platform-impl/src/com/intellij/diagnostic/HeapDumpAnalysisSupport.kt` | Bir satır: heap dump raporu `findExtension` (tam sınıf `ITNReporter`) yerine `findFirstAssignableExtension` ile submitter seçer. Böylece rapor JetBrains'e değil, `ReStudioErrorReportSubmitter`'a gider. | — (Faz 7) |
 | `platform/build-scripts/src/org/jetbrains/intellij/build/impl/productInfo/ProductLaunchRenderer.kt` | `IDE_HOME_PLACEHOLDER` sabiti ve bir satır: ek JVM argümanlarındaki yer tutucuyu işletim sisteminin IDE dizini makrosuyla değiştirir. `-Dplugin.path` buna ihtiyaç duyar. | — (ilk fork değişikliği) |
+| `plugins/ide-startup/importSettings/src/com/intellij/ide/startup/importSettings/jb/JbImportServiceImpl.kt` | İki satır: ilk açılış sihirbazı `JetBrains` vendor dizinini de tarar, plugin dizinini `vendorPluginsDir` ile bulur. Vendor `ReStudio` olduğu için sihirbaz IntelliJ, Rider gibi IDE'leri bulmuyordu. Yardımcılar `ReStudioJbVendorDirs.kt`'de (fork dosyası, aynı paket). | — (Faz 7) |
 
 ## Yeni sürüm serisine geçiş
 
