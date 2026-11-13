@@ -493,7 +493,7 @@ Karar (13 Kasım 2026): Spring desteği IntelliJ IDEA Ultimate seviyesini hedefl
 **Lombok**
 
 - [ ] Lombok plugin'ini (`plugins/lombok`, IDEA'dakiyle aynı kod) ReStudio'ya paketle
-  - Yazıldı (13 Kasım 2026): `ReStudioPlugins.SOURCE_PLUGIN_MODULES`. Installer build'i ve `fork/smoke-test.sh` çalıştırılmadı.
+  - Yazıldı (13 Kasım 2026): `ReStudioPlugins.SOURCE_PLUGIN_MODULES`. Lokal unsigned installer (263.7307.1019, macOS aarch64) build edildi; `fork/smoke-test.sh` geçti ve `idea.log` Lombok'u hatasız yüklenmiş gösteriyor. Lombok kullanan gerçek bir projede denenmedi. Linux installer'larında smoke test yok.
 
 **Spring 1: bean modeli ve autowire inspection**
 
