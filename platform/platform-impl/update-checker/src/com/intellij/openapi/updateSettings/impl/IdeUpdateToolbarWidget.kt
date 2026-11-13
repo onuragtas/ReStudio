@@ -237,6 +237,8 @@ internal class DownloadUpdateAction : UpdatePopupAction() {
     val downloadUrl = update.newBuild.downloadUrl
     when {
       update.patches != null -> PlatformUpdateDialog.startPatchTask(e.project, update, null, emptyList())
+      // ReStudio: without a patch chain, the IDE installs the full installer itself (ReStudioFullUpdate).
+      downloadUrl != null && ReStudioFullUpdate.start(e.project, update) -> Unit
       downloadUrl != null -> BrowserUtil.browse(IdeUrlTrackingParametersProvider.getInstance().augmentUrl(downloadUrl))
     }
   }

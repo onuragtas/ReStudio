@@ -58,7 +58,9 @@ updates="$(mktemp -d)/updates.xml"
 # The published updates.xml keeps the older builds, so the IDE can chain the patches.
 published="$(dirname "$updates")/published.xml"
 gh release download update-metadata --repo "$repository" --pattern updates.xml --output "$published" 2>/dev/null || : > "$published"
-"$(dirname "$0")/make-updates-xml.sh" "$build" "${tag#restudio/v}" \
+# The full installers in updates.xml are for the builds without a chain of patches.
+ASSETS_DIR="$(dirname "$1")" ASSETS_URL="https://github.com/$repository/releases/download/$tag/" \
+  "$(dirname "$0")/make-updates-xml.sh" "$build" "${tag#restudio/v}" \
   "https://github.com/$repository/releases/tag/$tag" "$([ -f "$patches/patches.txt" ] && echo "$patches/patches.txt")" \
   "$published" > "$updates"
 cat "$updates"

@@ -237,7 +237,8 @@ public final class PlatformUpdateDialog extends AbstractUpdateDialog {
           public void actionPerformed(ActionEvent e) {
             close(OK_EXIT_CODE);
             var downloadUrl = myPlatformUpdate.getNewBuild().getDownloadUrl();
-            if (downloadUrl != null) {
+            // ReStudio: without a patch chain, the IDE installs the full installer itself (ReStudioFullUpdate).
+            if (downloadUrl != null && !ReStudioFullUpdate.start(myProject, myPlatformUpdate)) {
               BrowserUtil.browse(IdeUrlTrackingParametersProvider.getInstance().augmentUrl(downloadUrl));
             }
           }

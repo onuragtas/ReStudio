@@ -46,6 +46,7 @@ internal class UpdateCheckerProjectActivity : ProjectActivity {
     withContext(Dispatchers.IO) {
       deleteOldApplicationDirectories()
       UpdateInstaller.cleanupPatch()
+      ReStudioFullUpdate.cleanupAfterUpdate() // ReStudio: deletes the old installation of a full update
     }
   }
 
