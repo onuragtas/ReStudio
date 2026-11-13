@@ -23,6 +23,13 @@ object ReStudioPlugins {
   /** The directory in the IDE home that holds the `path` plugins. */
   private const val TARGET_DIRECTORY = "restudio-plugins"
 
+  /**
+   * The plugins of this repository that the IDE contains in addition to the upstream list.
+   *
+   * IntelliJ IDEA Community does not contain the Lombok plugin, but the source of the plugin is in this repository.
+   */
+  val SOURCE_PLUGIN_MODULES: List<String> = listOf("intellij.lombok.plugin")
+
   fun bundledPluginPaths(communityHome: Path): List<Path> = pluginDirectories(communityHome.resolve("$SOURCE_DIRECTORY/bundled"))
 
   fun copyPathPlugins(communityHome: Path, targetDir: Path) {

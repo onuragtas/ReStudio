@@ -486,6 +486,41 @@ Bugünkü bilgi Faz 0 tablosundaki tek dosyalık probe ölçümü. Özelliklerin
 
 **Bitti kriteri:** Her LSP dili için ölçüm tablosu var, vakalar CI'de çalışıyor, ve her özellik ölçülen projede beklenen sonucu en az %90 veriyor. %90'ın altındaki her özellik için sebep (sunucu sınırı mı, bizim hatamız mı) yazılı.
 
+### Faz 9: Java, Lombok ve Spring (IDEA seviyesi hedefi)
+
+Karar (13 Kasım 2026): Spring desteği IntelliJ IDEA Ultimate seviyesini hedefler. Bu, Faz 8'deki "inspection kataloğu yazılmaz" kuralına bir istisnadır. Ultimate'ın Spring plugin'i kapalı kaynak; kodu alınmaz. Kendi plugin'imiz community'deki Java PSI ve UAST üzerine yazılır. Yeni modül: ReStudio-langs `spring/`. Language server değil, IntelliJ plugin'i.
+
+**Lombok**
+
+- [ ] Lombok plugin'ini (`plugins/lombok`, IDEA'dakiyle aynı kod) ReStudio'ya paketle
+  - Yazıldı (13 Kasım 2026): `ReStudioPlugins.SOURCE_PLUGIN_MODULES`. Installer build'i ve `fork/smoke-test.sh` çalıştırılmadı.
+
+**Spring 1: bean modeli ve autowire inspection**
+
+- [ ] Bean modeli: `@ComponentScan` ve `@SpringBootApplication` paketleri, stereotype'lar (`@Component`, `@Service`, `@Repository`, `@Controller`, meta-annotation'lar), `@Configuration` + `@Bean`, `@Import`, `@Profile`, `@Primary`, `@Qualifier`, generic tipler. Model dosya değişince cache'ten güncellenir.
+- [ ] Inject noktası ile bean arasında gutter ikonu ve iki yönlü navigasyon (field, constructor, setter, `@Autowired`, `@Inject`, `@Resource`, constructor injection annotation'sız da).
+- [ ] Inspection'lar: "Could not autowire. No beans found", "More than one bean", bulunamayan `@Qualifier`. Quick fix: `@Qualifier` ekle, `@Primary` öner.
+- [ ] Spring Boot auto-configuration: `META-INF/spring/...AutoConfiguration.imports` ve `@ConditionalOnClass` / `@ConditionalOnMissingBean` / `@ConditionalOnProperty`. Çözülemeyen koşulda yanlış alarm vermemek için uyarıyı bastır.
+- [ ] `application.yml` / `.properties`: `spring-configuration-metadata.json` ile completion, doküman, bilinmeyen anahtar uyarısı; `@Value` ve `@ConfigurationProperties` navigasyonu.
+- [ ] Spring Boot run configuration'ı (main sınıf, aktif profile'lar).
+
+**Bitti kriteri:** Seçilen 2-3 açık kaynak Spring Boot projesinde (biri `spring-petclinic`) autowire uyarıları ve navigasyon sonuçları IDEA Ultimate ile vaka listesine göre aynı. Yanlış alarm sıfır, fark listesi yazılı.
+
+**Spring 2: bean graph (ayrı faz)**
+
+- [ ] Bean modelinden bağımlılık grafiği. Ultimate'ın Diagrams altyapısı kapalı kaynak; çizim JCEF ve bir JS graph kütüphanesiyle. Zoom, filtre (paket, profile), bean'e tıklayınca koda gitme.
+
+### Faz 10: .NET Solution görünümü (Rider seviyesi hedefi)
+
+ReStudio-langs `dotnet/` içinde, Project tool window'a "Solution" adlı bir pane. Kaynak: Faz 2'deki `.sln`/`.slnx`/`.csproj` modeli.
+
+- [ ] Ağaç: solution → solution folder'lar → projeler → Dependencies (framework, NuGet paketleri, proje referansları) → dosya ve klasörler. Nested dosyalar (`.razor.cs`, `.Designer.cs`, `appsettings.*.json`) ana dosyanın altında.
+- [ ] Proje dışı dosyalar gizli; "Show All Files" ile görünür. `Compile Remove` / `None Include` kurallarına uyar.
+- [ ] Dosya ekleme, silme, taşıma ve rename `.csproj`'u gerektiğinde günceller (SDK-style projede çoğu zaman gerekmez).
+- [ ] Bağlam menüsü: proje referansı ekle, NuGet paketi ekle (mevcut NuGet penceresi), Build / Rebuild / Clean proje bazında, startup project seç.
+
+**Bitti kriteri:** `testdata/dotnet/Shop.sln` ve gerçek bir çok projeli solution, Rider'daki ağaçla aynı yapıda görünüyor; dosya işlemleri `dotnet build`'i bozmuyor.
+
 ## Repo yapısı ve Claude ile çalışma
 
 İki public GitHub reposu: ince bir fork ve asıl işin yapıldığı plugin reposu. Claude Code günlük olarak plugin reposunda, Faz 6-7 ve upstream merge'lerinde fork reposunda çalışır.
