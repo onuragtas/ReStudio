@@ -448,7 +448,10 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [x] IDE içinden güncelleme: eski bir build'den de "Update and Restart" çıksın, GitHub sayfası açılmasın
   - 13 Kasım 2026: IDE patch zincirini destekliyor (`UpdateStrategy.patches`). `make-updates-xml.sh` artık yayındaki `updates.xml`'in eski build'lerini ve patch'lerini koruyor (`KEEP_BUILDS`, varsayılan 20); `publish-release.sh` yayındaki dosyayı indirip verir. Her release yine tek patch üretir.
   - Kontrol edildi: `ReStudioUpdateChainTest` (1001 → 1017 → 1018 zinciri, tek patch, zincir dışı build). Script çıktısı `xmllint` ile geçerli. Kontrol edilmedi: kurulu eski bir build'de gerçek güncelleme.
-- [ ] Patch zinciri olmayan çok eski build için yedek yol: IDE installer'ı kendisi indirir, checksum doğrular, uygulamayı değiştirir ve yeniden başlar (fork kodu). Riskler: macOS imzası ve quarantine, Linux'ta yazma izni olmayan kurulum dizini.
+- [x] Patch zinciri olmayan çok eski build için yedek yol: IDE installer'ı kendisi indirir, checksum doğrular, uygulamayı değiştirir ve yeniden başlar (fork kodu). Riskler: macOS imzası ve quarantine, Linux'ta yazma izni olmayan kurulum dizini.
+  - 14 Kasım 2026, `df09b7bff07a` ve `01579512a51b`: `ReStudioFullUpdate`. `updates.xml`'deki `<restudio-package>` öğesi installer'ın URL'sini ve SHA-256'sını verir; URL sadece `onuragtas/ReStudio` release indirmelerinden olabilir. Patch zinciri her zaman önce gelir. macOS'ta `codesign --verify --deep --strict`, `spctl --assess` ve çalışan uygulamayla aynı Developer ID ekibi şarttır; Linux'ta kurulum dizini yazılabilir olmalı. Takas bir `sh` script'iyle yapılır, eski kurulum yeni build açılana kadar saklanır.
+  - Kontrol edildi: `ReStudioFullUpdateTest` (9) ve `ReStudioUpdateChainTest` (3); XML geçerli; takas script'i test dizinlerinde çalıştı; `codesign` ve `spctl` çıktısı parser'a uyuyor.
+  - Kontrol edilmedi: kurulu bir build'de gerçek güncelleme, takasın geri alma yolu, Linux'ta Linux path'i. `<restudio-package>` öğesi olan ilk release bir sonraki imzalı release olacak. Not: Developer ID ekip kontrolü, aynı ekibin sızmış bir sertifikasına karşı korumaz; `spctl` iptal edilmiş sertifikayı yakalar, bu yüzden sızan sertifika iptal edilmeli.
 - [ ] İlk açılış sihirbazı JetBrains IDE'lerinin (IntelliJ, Rider vb.) ayarlarını da import etsin
   - Yazıldı (13 Kasım 2026), derlendi, IDE'de denenmedi: sihirbaz sadece `ReStudio` vendor dizinini tarıyordu. Artık `JetBrains` dizinini de tarıyor ve plugin dizinini oradan alıyor.
 
@@ -519,7 +522,11 @@ Karar (13 Kasım 2026): Spring desteği IntelliJ IDEA Ultimate seviyesini hedefl
 
 **Spring 2: bean graph (ayrı faz)**
 
-- [ ] Bean modelinden bağımlılık grafiği. Ultimate'ın Diagrams altyapısı kapalı kaynak; çizim JCEF ve bir JS graph kütüphanesiyle. Zoom, filtre (paket, profile), bean'e tıklayınca koda gitme.
+- [x] Bean modelinden bağımlılık grafiği. Ultimate'ın Diagrams altyapısı kapalı kaynak; çizim JCEF ve bir JS graph kütüphanesiyle. Zoom, filtre (paket, profile), bean'e tıklayınca koda gitme.
+  - 14 Kasım 2026, ReStudio-langs `e588899` (release `v0.2.1`): `spring/.../graph/`. Veri mevcut bean modelinden ve `InjectionResolver`'dan gelir. Çizim JCEF tool window'da, plugin içindeki kendi SVG renderer'ıyla; ağ erişimi yok. Zoom/pan, paket/profile/library filtresi, isimle arama, dependency/dependent highlight, tıklayınca koda gitme. Unresolved ve ambiguous injection point'ler inspection ile aynı sonuçlarla ayrı edge stilinde. "Show Bean Graph": gutter menüsü, Project view ve editör context menüsü.
+  - Paketleme (14 Kasım 2026, `0045236081b5`): `fork/bundled-plugins.tsv` dil plugin'lerini 0.2.1'e aldı ve Spring'i ekledi. Lokal unsigned installer (263.7307.1020) build edildi; `check-bundled-plugins.sh` iki Linux arşivinde Spring ve Lombok'u buldu; macOS aarch64 `smoke-test.sh` geçti ve log'da altı ReStudio plugin'i 0.2.1 ile, Lombok hatasız yüklü. Linux installer'larında smoke test yok.
+  - Kontrol edildi: `BeanGraphTest` (9 test), gerçek Boot jar'larıyla `PetclinicIntegrationTest`; 300 bean yaklaşık 0.4 sn. Renderer Chromium'da 321 node ile denendi. Sandbox IDE'de plugin hatasız yüklendi.
+  - Kontrol edilmedi: tool window, gutter menüsü ve Project view action'ı IDE'de tıklanmadı; JCEF ile Kotlin arasındaki mesajlar ve tema değişimi denenmedi. Tool window Spring olmayan projelerde de görünüyor. Bean modeli `@SpringBootApplication` bean'ine tam sınıf adını veriyor; Spring kısa adı kullanır.
 
 ### Faz 10: .NET Solution görünümü (Rider seviyesi hedefi)
 
