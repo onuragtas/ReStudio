@@ -514,10 +514,17 @@ Karar (13 Kasım 2026): Spring desteği IntelliJ IDEA Ultimate seviyesini hedefl
 
 ReStudio-langs `dotnet/` içinde, Project tool window'a "Solution" adlı bir pane. Kaynak: Faz 2'deki `.sln`/`.slnx`/`.csproj` modeli.
 
-- [ ] Ağaç: solution → solution folder'lar → projeler → Dependencies (framework, NuGet paketleri, proje referansları) → dosya ve klasörler. Nested dosyalar (`.razor.cs`, `.Designer.cs`, `appsettings.*.json`) ana dosyanın altında.
-- [ ] Proje dışı dosyalar gizli; "Show All Files" ile görünür. `Compile Remove` / `None Include` kurallarına uyar.
-- [ ] Dosya ekleme, silme, taşıma ve rename `.csproj`'u gerektiğinde günceller (SDK-style projede çoğu zaman gerekmez).
+- [x] Ağaç: solution → solution folder'lar → projeler → Dependencies (framework, NuGet paketleri, proje referansları) → dosya ve klasörler. Nested dosyalar (`.razor.cs`, `.Designer.cs`, `appsettings.*.json`) ana dosyanın altında.
+  - 13 Kasım 2026, ReStudio-langs `bfaf179`: `dotnet/.../solution/` (`SolutionViewPane`, `SolutionNodes`, `SolutionModel`, `SolutionFile`, `ProjectContent`). Solution yapısı `.sln`/`.slnx` dosyasından okunur (`dotnet sln list` solution folder ve solution item vermiyor); dosyalar `dotnet msbuild -getItem` ile gelir (Compile, Content, None, EmbeddedResource, Folder ve diğerleri; `DependentUpon`, `Link`, `Visible`). Nesting: önce `DependentUpon`, sonra isim kuralları. Solution varsa pane varsayılan pane.
+  - Kontrol edildi: `SolutionViewTreeTest` gerçek MSBuild ile `Shop.sln`'in tam ağacını (8 proje, Dependencies, nested appsettings) ve geçici bir projede `.razor.cs`/`.razor.css` nesting'ini, `Link`'i, `Compile Remove`'u karşılaştırır. `SolutionModelTest` parser ve nesting kurallarını test eder. MSBuild çıktısında xunit paketinin `Visible=False` `.dll` item'ları görüldü; bunlar gizlenir.
+  - Kontrol edilmedi: ağaç arayüzde gözle görülmedi (sandbox IDE açıldı, plugin yüklendi, 8 modül oluştu, log'da hata yok; ekran görüntüsü alınamadı). Rider ile yan yana karşılaştırılmadı. Gerçek büyük bir solution denenmedi.
+- [x] Proje dışı dosyalar gizli; "Show All Files" ile görünür. `Compile Remove` / `None Include` kurallarına uyar.
+  - Kontrol edildi: Show All Files açıkken `bin`, `Web.csproj` ve `Compile Remove` dosyası gri ("not in project") görünür; kapalıyken gizli (`SolutionViewTreeTest`). Toolbar butonu arayüzde denenmedi.
+- [x] Dosya ekleme, silme, taşıma ve rename `.csproj`'u gerektiğinde günceller (SDK-style projede çoğu zaman gerekmez).
+  - `CsprojFileListener` + `CsprojEditor`: default item'ı olmayan (eski tip veya `EnableDefault*Items=false`) projede yeni dosyaya `Compile`/`None` item ekler; silmede `Include`/`Update` item'larını kaldırır; rename/taşımada `Include`/`Update`/`Remove` yollarını ve `DependentUpon`'u günceller. Refresh'ten gelen (IDE dışı, örn. `git checkout`) değişiklikler yok sayılır.
+  - Kontrol edildi: gerçek VFS event'leriyle platform testi (SDK projede yeni dosya → değişiklik yok, rename → `None Update` yolu güncellendi; eski tip projede add/delete). Kontrol edilmedi: değişiklikten sonra `dotnet build` çalıştırılmadı; projeler arası taşıma test edilmedi.
 - [ ] Bağlam menüsü: proje referansı ekle, NuGet paketi ekle (mevcut NuGet penceresi), Build / Rebuild / Clean proje bazında, startup project seç.
+  - Yazıldı, derlendi, test yok ve arayüzde denenmedi: Build / Rebuild (`--no-incremental`) / Clean (Run penceresinde, hata satırı linkli), Set as Startup Project (run configuration seçer veya oluşturur; startup proje kalın), Add Project Reference (checkbox listesi, döngü yapan projeler hariç; `dotnet add/remove reference`), Manage NuGet Packages (NuGet penceresini projeyle açar), Edit Project File.
 
 **Bitti kriteri:** `testdata/dotnet/Shop.sln` ve gerçek bir çok projeli solution, Rider'daki ağaçla aynı yapıda görünüyor; dosya işlemleri `dotnet build`'i bozmuyor.
 
