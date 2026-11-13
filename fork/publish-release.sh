@@ -55,8 +55,12 @@ gh release create "$tag" "$@" \
   --prerelease
 
 updates="$(mktemp -d)/updates.xml"
+# The published updates.xml keeps the older builds, so the IDE can chain the patches.
+published="$(dirname "$updates")/published.xml"
+gh release download update-metadata --repo "$repository" --pattern updates.xml --output "$published" 2>/dev/null || : > "$published"
 "$(dirname "$0")/make-updates-xml.sh" "$build" "${tag#restudio/v}" \
-  "https://github.com/$repository/releases/tag/$tag" "$([ -f "$patches/patches.txt" ] && echo "$patches/patches.txt")" > "$updates"
+  "https://github.com/$repository/releases/tag/$tag" "$([ -f "$patches/patches.txt" ] && echo "$patches/patches.txt")" \
+  "$published" > "$updates"
 cat "$updates"
 if ! gh release view update-metadata --repo "$repository" > /dev/null 2>&1; then
   gh release create update-metadata --repo "$repository" --target "$commit" \

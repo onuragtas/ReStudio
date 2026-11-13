@@ -445,6 +445,10 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
 - [x] Fork'un kökündeki `AGENTS.md`'yi fork'a göre sadeleştir: silinen `.agents/skills/` dosyalarına referanslar kalmasın, fork kuralları (JetBrains koduna dokunma, sadece marka/paketleme) eklensin
   - 9 Kasım 2026: `.agents/skills/` silinmemiş; `AGENTS.md`'nin başvurduğu dosyaların hepsi var. `AGENTS.md` değişmedi.
   - Fork kuralları `.ai/local.md`'de. `AGENTS.md` bu dosyayı `@./.ai/local.md` ile içe alıyor; upstream'de bu dosya yok, bu yüzden merge çakışması olmaz.
+- [x] IDE içinden güncelleme: eski bir build'den de "Update and Restart" çıksın, GitHub sayfası açılmasın
+  - 13 Kasım 2026: IDE patch zincirini destekliyor (`UpdateStrategy.patches`). `make-updates-xml.sh` artık yayındaki `updates.xml`'in eski build'lerini ve patch'lerini koruyor (`KEEP_BUILDS`, varsayılan 20); `publish-release.sh` yayındaki dosyayı indirip verir. Her release yine tek patch üretir.
+  - Kontrol edildi: `ReStudioUpdateChainTest` (1001 → 1017 → 1018 zinciri, tek patch, zincir dışı build). Script çıktısı `xmllint` ile geçerli. Kontrol edilmedi: kurulu eski bir build'de gerçek güncelleme.
+- [ ] Patch zinciri olmayan çok eski build için yedek yol: IDE installer'ı kendisi indirir, checksum doğrular, uygulamayı değiştirir ve yeniden başlar (fork kodu). Riskler: macOS imzası ve quarantine, Linux'ta yazma izni olmayan kurulum dizini.
 - [ ] İlk açılış sihirbazı JetBrains IDE'lerinin (IntelliJ, Rider vb.) ayarlarını da import etsin
   - Yazıldı (13 Kasım 2026), derlendi, IDE'de denenmedi: sihirbaz sadece `ReStudio` vendor dizinini tarıyordu. Artık `JetBrains` dizinini de tarıyor ve plugin dizinini oradan alıyor.
 
