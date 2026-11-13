@@ -84,6 +84,10 @@ class ReStudioFullUpdateTest {
     assertThat(ReStudioFullUpdate.selectPackage(packages(), null, "x64")).isNull()
     val badSha = ReStudioUpdatePackage("linux", "x64", "https://example.invalid/a.tar.gz", "1234", null)
     assertThat(ReStudioFullUpdate.selectPackage(listOf(badSha), "linux", "x64")).isNull()
+    val otherHost = ReStudioUpdatePackage("linux", "x64", "https://example.invalid/a.tar.gz", "a".repeat(64), null)
+    assertThat(ReStudioFullUpdate.selectPackage(listOf(otherHost), "linux", "x64")).isNull()
+    val otherRepo = ReStudioUpdatePackage("linux", "x64", "https://github.com/someone/ReStudio/releases/download/v1/a.tar.gz", "a".repeat(64), null)
+    assertThat(ReStudioFullUpdate.selectPackage(listOf(otherRepo), "linux", "x64")).isNull()
     val twice = packages().filter { it.os == "linux" && it.arch == "x64" }.let { it + it }
     assertThat(ReStudioFullUpdate.selectPackage(twice, "linux", "x64")).isNull()
   }

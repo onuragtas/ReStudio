@@ -81,6 +81,8 @@ object ReStudioFullUpdate {
   private const val OLD_SUFFIX = ".restudio-old"
   private const val NEW_SUFFIX = ".restudio-new"
   private const val COMMAND_TIMEOUT_MS = 10 * 60 * 1000
+  /** The IDE downloads a full installer only from the ReStudio releases. A Linux installer has no signature to check. */
+  private const val DOWNLOAD_PREFIX = "https://github.com/onuragtas/ReStudio/releases/download/"
   private val SHA256_PATTERN = Regex("[0-9a-f]{64}")
   private val BUILD_NUMBER_PATTERN = Regex("\"buildNumber\"\\s*:\\s*\"([^\"]+)\"")
   private val TEAM_PATTERN = Regex("^TeamIdentifier=(\\S+)$", RegexOption.MULTILINE)
@@ -128,7 +130,7 @@ object ReStudioFullUpdate {
   fun selectPackage(packages: List<ReStudioUpdatePackage>, os: String?, arch: String): ReStudioUpdatePackage? {
     if (os == null) return null
     return packages.singleOrNull { it.os == os && it.arch == arch }
-      ?.takeIf { it.url.startsWith("https://") && SHA256_PATTERN.matches(it.sha256) }
+      ?.takeIf { it.url.startsWith(DOWNLOAD_PREFIX) && !it.url.contains("..") && SHA256_PATTERN.matches(it.sha256) }
   }
 
   /**
