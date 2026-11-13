@@ -11,8 +11,9 @@ Dart	1212339	511.0.0	3c96609978476b489fb0b6704e0c9899a28eec594f09f1da16b2ada6822
 io.flutter	1212341	98.0.0	1d5f09a8b17ddf95bb89c6fa9835deb6f0dc89a5ac7d95c1b472c429bcecc65e	BSD-3-Clause	path
 PythonCore	1212274	263.7307.200	996f7d28f640692610150b84cb2f86f9304e91c584e3c6035e4f7337a90e3dda	Apache-2.0	bundled
 com.redhat.devtools.lsp4ij	1157565	0.21.0	2ed125cc36620545c226186587d36ca4a8fc7c3db85e1ee5dfe0946b973e6caa	EPL-2.0	path
-dev.restudio.core	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.1.1/core-0.1.1.zip	0.1.1	e408f4cac6abe75eaa00b8d3768b5090fbe951a2afaeeae9d00f8c008002933d	ReStudio-langs	path
-dev.restudio.go	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.1.1/go-0.1.1.zip	0.1.1	80b51ae7677a04a739d7b1eaea95ef5c78c2bd27205dd0f7cd3b251d84adae7f	ReStudio-langs	path
-dev.restudio.dotnet	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.1.1/dotnet-0.1.1.zip	0.1.1	55759a715f408cb45060b40aa22416eb9a7238335fd2b6575f46ba8a7e0f54a3	ReStudio-langs	path
-dev.restudio.web	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.1.1/web-0.1.1.zip	0.1.1	b6767c334fc503e27b0351a5970455f3f212b9d6f0ebde7649cf6e43b9bf1e33	ReStudio-langs	path
-dev.restudio.php	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.1.1/php-0.1.1.zip	0.1.1	d79644d50f56bea24f9e6ebb40c062bc012a8a308314cd413bb3dd509e925cbc	ReStudio-langs	path
+dev.restudio.core	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.0/core-0.2.0.zip	0.2.0	76fd95c3d1b9aa3cf225121c035745d23e59deca29afa3987e91139c6d3e2af1	ReStudio-langs	path
+dev.restudio.go	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.0/go-0.2.0.zip	0.2.0	e88918f4487723391d821569e53268fb96acfc85381903e35f9516dd7bcacab1	ReStudio-langs	path
+dev.restudio.dotnet	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.0/dotnet-0.2.0.zip	0.2.0	7c66a800758124e57b4e3c3246092737e8985ec91c8fdaac292a56b5af91373b	ReStudio-langs	path
+dev.restudio.web	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.0/web-0.2.0.zip	0.2.0	63f964b8e575fdea8f07a991f2be7f9ea465ba234c997dce5af9b12e703e7982	ReStudio-langs	path
+dev.restudio.php	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.0/php-0.2.0.zip	0.2.0	eaed2dee065a4a93aad4db736708b18fdaa949dbb9e9654c919abd66cb21864a	ReStudio-langs	path
+dev.restudio.spring	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.0/spring-0.2.0.zip	0.2.0	362f247eb59b5b435d3dd59889dcf1a0df72df67389120ce2da20134d98a84e7	ReStudio-langs	path

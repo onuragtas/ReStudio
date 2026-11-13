@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Starts an installed IDE with a small Python and Dart project, waits for indexing, and closes the IDE.
-# It stops with an error if Dart, Flutter, LSP4IJ, Python or a ReStudio language plugin does not load, or if one of them
+# It stops with an error if Dart, Flutter, LSP4IJ, Python, Lombok or a ReStudio language plugin does not load, or if one of them
 # logs an error.
 # The release workflow runs it on Linux.
 #
@@ -57,7 +57,8 @@ fi
 
 loaded="$(awk '/Loaded (bundled|custom) plugins:/' "$log")"
 for id in "(Dart," "(io.flutter," "(com.redhat.devtools.lsp4ij," "(PythonCore," "(dev.restudio.core," "(dev.restudio.go," \
-  "(dev.restudio.dotnet," "(dev.restudio.web," "(dev.restudio.php,"; do
+  "(dev.restudio.dotnet," "(dev.restudio.web," "(dev.restudio.php," "(dev.restudio.spring," \
+  "(Lombook Plugin,"; do
   if [[ "$loaded" != *"$id"* ]]; then
     echo "The IDE did not load the plugin $id" >&2
     status=1
