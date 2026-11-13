@@ -498,11 +498,17 @@ Karar (13 Kasım 2026): Spring desteği IntelliJ IDEA Ultimate seviyesini hedefl
 **Spring 1: bean modeli ve autowire inspection**
 
 - [ ] Bean modeli: `@ComponentScan` ve `@SpringBootApplication` paketleri, stereotype'lar (`@Component`, `@Service`, `@Repository`, `@Controller`, meta-annotation'lar), `@Configuration` + `@Bean`, `@Import`, `@Profile`, `@Primary`, `@Qualifier`, generic tipler. Model dosya değişince cache'ten güncellenir.
+  - Yazıldı (13 Kasım 2026): ReStudio-langs `spring/` (`dev.restudio.spring`), commit `2774fdf`. Ayrıca Spring Data repository'leri, `@EnableConfigurationProperties` / `@ConfigurationPropertiesScan`, `FactoryBean`. Cache: `PsiModificationTracker` + root değişikliği. Fixture testleri var; `fork/smoke-test.sh` ve fork içinde elle deneme yapılmadı.
 - [ ] Inject noktası ile bean arasında gutter ikonu ve iki yönlü navigasyon (field, constructor, setter, `@Autowired`, `@Inject`, `@Resource`, constructor injection annotation'sız da).
+  - Yazıldı (13 Kasım 2026): implicit, record ve Lombok `@RequiredArgsConstructor` constructor'ları dahil; `@Bean` parametreleri de. Fixture testleri var; IDE'de elle tıklanmadı.
 - [ ] Inspection'lar: "Could not autowire. No beans found", "More than one bean", bulunamayan `@Qualifier`. Quick fix: `@Qualifier` ekle, `@Primary` öner.
+  - Yazıldı (13 Kasım 2026): testdata/spring ile gerçek Spring Boot 3.5.0 jar'larında entegrasyon testi: petclinic'te sıfır uyarı, `cases` paketinde 4 beklenen uyarı. IDEA Ultimate ile karşılaştırma yapılmadı (beklenen sonuçlar elle yazıldı).
 - [ ] Spring Boot auto-configuration: `META-INF/spring/...AutoConfiguration.imports` ve `@ConditionalOnClass` / `@ConditionalOnMissingBean` / `@ConditionalOnProperty`. Çözülemeyen koşulda yanlış alarm vermemek için uyarıyı bastır.
+  - Yazıldı (13 Kasım 2026): `AutoConfiguration.imports` + eski `spring.factories`; `@ConditionalOnClass`/`@ConditionalOnMissingClass` değerlendirilir, diğer koşullu bean'ler 'olabilir' sayılır ("no beans" bastırılır, belirsizlikte sayılmaz). Kütüphane interface tipleri için "no beans" hiç raporlanmaz.
 - [ ] `application.yml` / `.properties`: `spring-configuration-metadata.json` ile completion, doküman, bilinmeyen anahtar uyarısı; `@Value` ve `@ConfigurationProperties` navigasyonu.
+  - Yazıldı (13 Kasım 2026): YAML completion iç içe değil noktalı anahtar ekler (`jpa.show-sql:`). Bilinmeyen anahtar uyarısı sadece metadata kök'lerinde (`spring`, `server`, ...) ve `@Value` kullanılmayan anahtarlarda. Fixture testleri var.
 - [ ] Spring Boot run configuration'ı (main sınıf, aktif profile'lar).
+  - Yazıldı (13 Kasım 2026): `ApplicationConfiguration` alt sınıfı, profiller `-Dspring.profiles.active` olarak; editörde "Active profiles" fragment'ı. Producer testi var; IDE'de çalıştırılmadı.
 
 **Bitti kriteri:** Seçilen 2-3 açık kaynak Spring Boot projesinde (biri `spring-petclinic`) autowire uyarıları ve navigasyon sonuçları IDEA Ultimate ile vaka listesine göre aynı. Yanlış alarm sıfır, fark listesi yazılı.
 
