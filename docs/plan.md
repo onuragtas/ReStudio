@@ -392,7 +392,7 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - Upstream workflow sadece Apple Silicon (aarch64) `.dmg`'yi yüklüyor. Yerel build Intel `.dmg`'yi de üretiyor; Intel Mac gerekiyorsa workflow'a onun yükleme adımı eklenmeli.
   - Upstream'in günlük `schedule` tetikleyicisi fork'ta gereksiz dakika harcar; fork'ta kapalı kalsın.
   - 9 Kasım 2026: `fork-release.yml` build'den önce `fork/fetch-bundled-plugins.sh`'ı çalıştırıyor. Build'den sonra her Linux `tar.gz`'de Dart, Flutter, LSP4IJ ve Python dizinlerini arıyor; biri yoksa release durur. Kontrol yerel arşivlerde geçti. CI'da henüz çalışmadı.
-- [ ] Mac'te yerel release (istek: Onur, 10 Kasım 2026). Skill: `.claude/skills/restudio-release/SKILL.md`. Mac, Linux `.tar.gz`, macOS `.sit` ve `.dmg`'yi tek build'de üretir ve `fork/publish-release.sh` ile yayınlar.
+- [x] Mac'te yerel release (istek: Onur, 10 Kasım 2026). Skill: `.claude/skills/restudio-release/SKILL.md`. Mac, Linux `.tar.gz`, macOS `.sit` ve `.dmg`'yi tek build'de üretir ve `fork/publish-release.sh` ile yayınlar.
   - CI ve yerel release aynı script'leri kullanır: `fork/next-build-number.sh`, `fork/check-bundled-plugins.sh`, `fork/publish-release.sh`.
   - Build numarası yayındaki `updates.xml`'den yüksek olur. CI'da en az 1000 + run numarası olur.
   - Yerel release tag'i oluşturunca `fork-release.yml` başlar. Yeni `guard` job'ı release'i bulur ve build'i atlar.
@@ -502,23 +502,26 @@ Karar (13 Kasım 2026): Spring desteği IntelliJ IDEA Ultimate seviyesini hedefl
 
 **Lombok**
 
-- [ ] Lombok plugin'ini (`plugins/lombok`, IDEA'dakiyle aynı kod) ReStudio'ya paketle
+- [x] Lombok plugin'ini (`plugins/lombok`, IDEA'dakiyle aynı kod) ReStudio'ya paketle
   - Yazıldı (13 Kasım 2026): `ReStudioPlugins.SOURCE_PLUGIN_MODULES`. Lokal unsigned installer (263.7307.1019, macOS aarch64) build edildi; `fork/smoke-test.sh` geçti ve `idea.log` Lombok'u hatasız yüklenmiş gösteriyor. Lombok kullanan gerçek bir projede denenmedi. Linux installer'larında smoke test yok.
+  - Kurulu IDE'de denendi (14 Kasım 2026, 1020 build, `testdata/spring`): `@RequiredArgsConstructor` sınıflarında "final field" hatası yok, Lombok hatasız yüklü. `v0.2.0` ile yayında.
 
 **Spring 1: bean modeli ve autowire inspection**
 
-- [ ] Bean modeli: `@ComponentScan` ve `@SpringBootApplication` paketleri, stereotype'lar (`@Component`, `@Service`, `@Repository`, `@Controller`, meta-annotation'lar), `@Configuration` + `@Bean`, `@Import`, `@Profile`, `@Primary`, `@Qualifier`, generic tipler. Model dosya değişince cache'ten güncellenir.
+- [x] Bean modeli: `@ComponentScan` ve `@SpringBootApplication` paketleri, stereotype'lar (`@Component`, `@Service`, `@Repository`, `@Controller`, meta-annotation'lar), `@Configuration` + `@Bean`, `@Import`, `@Profile`, `@Primary`, `@Qualifier`, generic tipler. Model dosya değişince cache'ten güncellenir.
   - Yazıldı (13 Kasım 2026): ReStudio-langs `spring/` (`dev.restudio.spring`), commit `2774fdf`. Ayrıca Spring Data repository'leri, `@EnableConfigurationProperties` / `@ConfigurationPropertiesScan`, `FactoryBean`. Cache: `PsiModificationTracker` + root değişikliği. Fixture testleri var; `fork/smoke-test.sh` ve fork içinde elle deneme yapılmadı.
-- [ ] Inject noktası ile bean arasında gutter ikonu ve iki yönlü navigasyon (field, constructor, setter, `@Autowired`, `@Inject`, `@Resource`, constructor injection annotation'sız da).
+- [x] Inject noktası ile bean arasında gutter ikonu ve iki yönlü navigasyon (field, constructor, setter, `@Autowired`, `@Inject`, `@Resource`, constructor injection annotation'sız da).
   - Yazıldı (13 Kasım 2026): implicit, record ve Lombok `@RequiredArgsConstructor` constructor'ları dahil; `@Bean` parametreleri de. Fixture testleri var; IDE'de elle tıklanmadı.
-- [ ] Inspection'lar: "Could not autowire. No beans found", "More than one bean", bulunamayan `@Qualifier`. Quick fix: `@Qualifier` ekle, `@Primary` öner.
+  - Kurulu IDE'de (14 Kasım 2026, 1020 build): gutter ikonları göründü. İkona tıklayıp gitme denenmedi; arka plan tıklaması ikona değil editör tab'ına düşüyor.
+- [x] Inspection'lar: "Could not autowire. No beans found", "More than one bean", bulunamayan `@Qualifier`. Quick fix: `@Qualifier` ekle, `@Primary` öner.
   - Yazıldı (13 Kasım 2026): testdata/spring ile gerçek Spring Boot 3.5.0 jar'larında entegrasyon testi: petclinic'te sıfır uyarı, `cases` paketinde 4 beklenen uyarı. IDEA Ultimate ile karşılaştırma yapılmadı (beklenen sonuçlar elle yazıldı).
   - Sandbox IDE (13 Kasım 2026, dev build + Lombok): `testdata/spring` Gradle sync'ten sonra editörde 4 hata ve gutter ikonları göründü. Headless `idea inspect` sadece Spring profiliyle aynı 4 sonucu verdi; petclinic ve properties/YAML'da sonuç yok. Lombok olmadan `@RequiredArgsConstructor` sınıflarında Java "final field" hatası çıkar; Spring plugin'i Lombok'un paketlenmesine dayanır. Gutter navigasyonuna tıklanmadı.
-- [ ] Spring Boot auto-configuration: `META-INF/spring/...AutoConfiguration.imports` ve `@ConditionalOnClass` / `@ConditionalOnMissingBean` / `@ConditionalOnProperty`. Çözülemeyen koşulda yanlış alarm vermemek için uyarıyı bastır.
+  - Kurulu IDE'de denendi (14 Kasım 2026, 1020 build): `cases` paketinde 4 beklenen hata doğru satırlarda. IDEA Ultimate ile karşılaştırma hâlâ yok (Faz bitti kriteri).
+- [x] Spring Boot auto-configuration: `META-INF/spring/...AutoConfiguration.imports` ve `@ConditionalOnClass` / `@ConditionalOnMissingBean` / `@ConditionalOnProperty`. Çözülemeyen koşulda yanlış alarm vermemek için uyarıyı bastır.
   - Yazıldı (13 Kasım 2026): `AutoConfiguration.imports` + eski `spring.factories`; `@ConditionalOnClass`/`@ConditionalOnMissingClass` değerlendirilir, diğer koşullu bean'ler 'olabilir' sayılır ("no beans" bastırılır, belirsizlikte sayılmaz). Kütüphane interface tipleri için "no beans" hiç raporlanmaz.
-- [ ] `application.yml` / `.properties`: `spring-configuration-metadata.json` ile completion, doküman, bilinmeyen anahtar uyarısı; `@Value` ve `@ConfigurationProperties` navigasyonu.
+- [x] `application.yml` / `.properties`: `spring-configuration-metadata.json` ile completion, doküman, bilinmeyen anahtar uyarısı; `@Value` ve `@ConfigurationProperties` navigasyonu.
   - Yazıldı (13 Kasım 2026): YAML completion iç içe değil noktalı anahtar ekler (`jpa.show-sql:`). Bilinmeyen anahtar uyarısı sadece metadata kök'lerinde (`spring`, `server`, ...) ve `@Value` kullanılmayan anahtarlarda. Fixture testleri var.
-- [ ] Spring Boot run configuration'ı (main sınıf, aktif profile'lar).
+- [x] Spring Boot run configuration'ı (main sınıf, aktif profile'lar).
   - Yazıldı (13 Kasım 2026): `ApplicationConfiguration` alt sınıfı, profiller `-Dspring.profiles.active` olarak; editörde "Active profiles" fragment'ı. Producer testi var; IDE'de çalıştırılmadı.
 
 **Bitti kriteri:** Seçilen 2-3 açık kaynak Spring Boot projesinde (biri `spring-petclinic`) autowire uyarıları ve navigasyon sonuçları IDEA Ultimate ile vaka listesine göre aynı. Yanlış alarm sıfır, fark listesi yazılı.
