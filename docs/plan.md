@@ -452,8 +452,11 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - 14 Kasım 2026, `df09b7bff07a` ve `01579512a51b`: `ReStudioFullUpdate`. `updates.xml`'deki `<restudio-package>` öğesi installer'ın URL'sini ve SHA-256'sını verir; URL sadece `onuragtas/ReStudio` release indirmelerinden olabilir. Patch zinciri her zaman önce gelir. macOS'ta `codesign --verify --deep --strict`, `spctl --assess` ve çalışan uygulamayla aynı Developer ID ekibi şarttır; Linux'ta kurulum dizini yazılabilir olmalı. Takas bir `sh` script'iyle yapılır, eski kurulum yeni build açılana kadar saklanır.
   - Kontrol edildi: `ReStudioFullUpdateTest` (9) ve `ReStudioUpdateChainTest` (3); XML geçerli; takas script'i test dizinlerinde çalıştı; `codesign` ve `spctl` çıktısı parser'a uyuyor.
   - Kontrol edilmedi: kurulu bir build'de gerçek güncelleme, takasın geri alma yolu, Linux'ta Linux path'i. `<restudio-package>` öğesi olan ilk release bir sonraki imzalı release olacak. Not: Developer ID ekip kontrolü, aynı ekibin sızmış bir sertifikasına karşı korumaz; `spctl` iptal edilmiş sertifikayı yakalar, bu yüzden sızan sertifika iptal edilmeli.
-- [ ] İlk açılış sihirbazı JetBrains IDE'lerinin (IntelliJ, Rider vb.) ayarlarını da import etsin
+- [x] İlk açılış sihirbazı JetBrains IDE'lerinin (IntelliJ, Rider vb.) ayarlarını da import etsin
   - Yazıldı (13 Kasım 2026), derlendi, IDE'de denenmedi: sihirbaz sadece `ReStudio` vendor dizinini tarıyordu. Artık `JetBrains` dizinini de tarıyor ve plugin dizinini oradan alıyor.
+  - Denendi (14 Kasım 2026, kurulu 1020 build, boş config dizini): sihirbaz "IntelliJ IDEA Community 2026.3"ı listeledi; import UI, keymap ve code style ayarlarını aldı, IDE yeniden başladı.
+  - Bulunan hata: yeniden başlamadaki `ConfigImportHelper` eski plugin dizinini `ReStudio` vendor'ıyla hesaplıyordu. macOS'ta plugin'ler config dizininde olduğu için etkisi yok; Linux'ta JetBrains IDE'sinin plugin'leri taşınmıyordu. Düzeltildi: `ReStudioOldPluginsDir` (3 test). Kontrol edilmedi: Linux'ta gerçek import; Rider gibi plugin'i olan bir IDE'den import (makinede yok).
+  - Not: import sonrası yeniden başlamada upstream'in "Write-unsafe context" SEVERE log'u çıkıyor (`JbImportServiceImpl.scheduleRestart`). JetBrains kodu; kullanıcıya etkisi görülmedi.
 
 **Bitti kriteri:** GitHub Releases'ta indirilebilir installer var; kurulunca kendi adıyla açılıyor, desteklenen diller hazır geliyor, resmi IntelliJ ile yan yana çalışıyor ve bir upstream merge'ü baştan sona yapılmış.
 
@@ -527,6 +530,7 @@ Karar (13 Kasım 2026): Spring desteği IntelliJ IDEA Ultimate seviyesini hedefl
   - Paketleme (14 Kasım 2026, `0045236081b5`): `fork/bundled-plugins.tsv` dil plugin'lerini 0.2.1'e aldı ve Spring'i ekledi. Lokal unsigned installer (263.7307.1020) build edildi; `check-bundled-plugins.sh` iki Linux arşivinde Spring ve Lombok'u buldu; macOS aarch64 `smoke-test.sh` geçti ve log'da altı ReStudio plugin'i 0.2.1 ile, Lombok hatasız yüklü. Linux installer'larında smoke test yok.
   - Kontrol edildi: `BeanGraphTest` (9 test), gerçek Boot jar'larıyla `PetclinicIntegrationTest`; 300 bean yaklaşık 0.4 sn. Renderer Chromium'da 321 node ile denendi. Sandbox IDE'de plugin hatasız yüklendi.
   - Kontrol edilmedi: tool window, gutter menüsü ve Project view action'ı IDE'de tıklanmadı; JCEF ile Kotlin arasındaki mesajlar ve tema değişimi denenmedi. Tool window Spring olmayan projelerde de görünüyor. Bean modeli `@SpringBootApplication` bean'ine tam sınıf adını veriyor; Spring kısa adı kullanır.
+  - Kurulu IDE'de denendi (14 Kasım 2026, 1020 build): tool window `NoClassDefFoundError` ile açılmadı. Spring plugin'i JCEF modülüne bağımlı değildi, bu yüzden classloader `JBCefBrowser`'ı görmüyordu. Düzeltildi: ReStudio-langs `ed061e7` (`v0.2.2`). Düzeltmeden sonra tool window filtre ve lejantla açıldı. Release `restudio/v0.2.0` hatalı 0.2.1'i içeriyor. Kontrol edilmedi: petclinic projesinde graf dolu hâli; ikinci açılışta Gradle modülü yüklenmedi ve graf 0 bean gösterdi.
 
 ### Faz 10: .NET Solution görünümü (Rider seviyesi hedefi)
 

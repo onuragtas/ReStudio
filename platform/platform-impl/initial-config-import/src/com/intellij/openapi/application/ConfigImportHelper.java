@@ -870,6 +870,7 @@ public final class ConfigImportHelper {
       }
       if (oldPluginsDir == null) {
         oldPluginsDir = oldConfigDir.getFileSystem().getPath(defaultPluginsPath(getNameWithVersion(oldConfigDir)));
+        oldPluginsDir = ReStudioOldPluginsDir.forVendorOf(oldConfigDir, oldPluginsDir); // ReStudio: the plugins of a JetBrains IDE
       }
     }
     return oldPluginsDir;
