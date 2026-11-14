@@ -128,11 +128,23 @@ cmd_merge() {
 }
 
 
+# Stops when a file in the index has fewer "ReStudio:" markers than in main.
+# Each changed line in a JetBrains file has such a marker, so a lower count shows a lost fork change.
+check_markers() {
+  local lost
+  lost="$(awk -F: 'NR == FNR { old[$1] = $2; next } { new[$1] = $2 }
+    END { for (f in old) if (new[f] + 0 < old[f]) print "  " f " (" old[f] " -> " new[f] + 0 ")" }' \
+    <(git grep -c 'ReStudio:' "$MAIN" -- | sed "s|^$MAIN:||") <(git grep --cached -c 'ReStudio:' --))"
+  [[ -z "$lost" ]] || die "the merge lost fork changes. Files with fewer 'ReStudio:' markers than in $MAIN:
+$lost"
+}
+
 cmd_finish() {
   local tag="${1:-}"
   [[ -n "$tag" ]] || die "finish needs the tag (for example idea/263.7307.200)."
   git rev-parse --verify --quiet MERGE_HEAD >/dev/null || die "no merge is in progress."
   [[ -z "$(git diff --name-only --diff-filter=U)" ]] || die "there are unresolved conflicts."
+  check_markers
 
   echo "$tag" > "$BASE_FILE"
   git add "$BASE_FILE"

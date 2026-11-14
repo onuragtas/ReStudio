@@ -2,6 +2,7 @@
 package com.intellij.ide.startup.importSettings.jb
 
 import com.intellij.openapi.application.PathManager
+import com.intellij.openapi.application.ReStudioOldPluginsDir
 import java.nio.file.Path
 import kotlin.io.path.name
 
@@ -16,19 +17,7 @@ internal const val JETBRAINS_VENDOR_DIR: String = "JetBrains"
 /**
  * Returns the plugins directory of the IDE that keeps its settings in [confDir].
  *
- * [PathManager.getDefaultPluginPathFor] uses the vendor directory of ReStudio.
- * This function puts the vendor directory of [confDir] in its place.
+ * The restart after a full import uses the same rule in `ConfigImportHelper`, through [ReStudioOldPluginsDir].
  */
-internal fun vendorPluginsDir(confDir: Path): Path {
-  val defaultPath = Path.of(PathManager.getDefaultPluginPathFor(confDir.name))
-  val ownVendor = Path.of(PathManager.getDefaultConfigPathFor("X")).parent?.name ?: return defaultPath
-  val vendor = confDir.parent?.name ?: return defaultPath
-  if (vendor == ownVendor) return defaultPath
-
-  val names = defaultPath.map { it.toString() }.toMutableList()
-  val index = names.indexOf(confDir.name)
-  if (index < 1 || names[index - 1] != ownVendor) return defaultPath
-  names[index - 1] = vendor
-  val root = defaultPath.root ?: return defaultPath
-  return names.fold(root) { path, name -> path.resolve(name) }
-}
+internal fun vendorPluginsDir(confDir: Path): Path =
+  ReStudioOldPluginsDir.forVendorOf(confDir, Path.of(PathManager.getDefaultPluginPathFor(confDir.name)))

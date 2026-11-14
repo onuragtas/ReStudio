@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Starts an installed IDE with a small Python and Dart project, waits for indexing, and closes the IDE.
+# It opens the Spring bean graph tool window, so its classes load. The NuGet tool window is only in .NET projects.
 # It stops with an error if Dart, Flutter, LSP4IJ, Python, Lombok or a ReStudio language plugin does not load, or if one of them
 # logs an error.
 # The release workflow runs it on Linux.
@@ -16,7 +17,7 @@ if command -v cygpath > /dev/null; then work="$(cygpath -m "$work")"; fi
 mkdir -p "$work/project"
 printf 'print("ReStudio")\n' > "$work/project/main.py"
 printf 'void main() {\n  print("ReStudio");\n}\n' > "$work/project/main.dart"
-printf '%%waitForSmart\n%%exitApp\n' > "$work/script.txt"
+printf '%%waitForSmart\n%%action ActivateSpringBeanGraphToolWindow\n%%exitApp\n' > "$work/script.txt"
 
 cat > "$work/idea.properties" <<EOF
 idea.config.path=$work/config
@@ -73,6 +74,14 @@ if [[ -n "$errors" ]]; then
     echo "A bundled plugin of ReStudio caused an error" >&2
     status=1
   fi
+fi
+
+# The class name of an exception is in the stack trace, not on the SEVERE line.
+missing="$(awk '/ClassNotFoundException: .*PluginClassLoader\(.*name=(ReStudio|Dart|Flutter|LSP4IJ|Python|Lombok)/' "$log")"
+if [[ -n "$missing" ]]; then
+  echo "A bundled plugin of ReStudio cannot load a class:" >&2
+  echo "$missing" | sort -u | cut -c1-300 >&2
+  status=1
 fi
 
 if [[ $status -ne 0 ]]; then

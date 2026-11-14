@@ -36,6 +36,7 @@ Fork, JetBrains'in `master` branch'ini takip etmez. Yeni özellik ve düzeltmele
 
 Her sync PR'ı merge edilmeden önce:
 
+- [x] Otomatik: `fork/upstream-sync.sh finish`, bir dosyada `ReStudio:` işareti `main`dekinden azsa durur. Kaybolan bir fork satırı böylece merge commit'inden önce görünür.
 - [ ] Fork modülleri ve testleri derleniyor: `./bazel.cmd build //build:i_build_target //idea/customization/base:base //platform/platform-impl:ide-impl //platform/core-impl:core-impl` ve `./tests.cmd --module intellij.idea.community.build.tests --test 'org.jetbrains.intellij.build.ReStudio*'`
 - [ ] CI (`fork-release.yml`, tag'siz) sync branch'inde geçiyor; smoke test bundled plugin'leri yüklüyor
 - [ ] IDE kaynaktan derleniyor ve açılıyor (`./installers.cmd -Dintellij.build.target.os=current` veya IDE'deki "IDEA" run configuration'ı)
