@@ -627,13 +627,20 @@ En büyük risk kapsam: dört dil paketi ve bir fork'un sürekli bakımı tek ki
 
 - [x] IDE'nin adı ne olacak? (JetBrains markalarına benzemeyen, GitHub'da ve domain olarak boş bir isim)
   - Cevap (9 Kasım 2026): ReStudio.
-- [ ] Hangi işletim sistemleri için installer çıkacak? İlk sürüm tek platformla sınırlanabilir.
-- [ ] Dil sırası doğru mu? (Öneri: .NET → Go → frontend → PHP)
-- [ ] Roslyn LS mi csharp-ls mi; vtsls mi typescript-language-server mı? Faz 0 ölçümüne göre öneri (onay bekliyor):
+- [x] Hangi işletim sistemleri için installer çıkacak? İlk sürüm tek platformla sınırlanabilir.
+  - Karar (Onur, 15 Kasım 2026): Şimdilik sadece macOS (Apple silicon). Linux ve Windows işleri bekler.
+- [x] Dil sırası doğru mu? (Öneri: .NET → Go → frontend → PHP)
+  - Karar (Onur, 15 Kasım 2026): Frontend (JS/TS, HTML/CSS, React, Vue, Angular) en sona. Sıra: .NET, Go, PHP, Java ve Spring, sonra frontend. Faz 8'deki frontend vakaları da en sona kalır.
+- [x] Roslyn LS mi csharp-ls mi; vtsls mi typescript-language-server mı? Faz 0 ölçümüne göre öneri:
+  - Karar (15 Kasım 2026): Onur seçimi bana bıraktı. Aşağıdaki öneri geçerli: C# için Roslyn LS, TypeScript için vtsls.
   - **C#:** Varsayılan Roslyn LS (Microsoft'un resmi server'ı, `solution/open` ile 12 sn'de tam çalışıyor). csharp-ls yedek kalsın: aynı özellikleri özel mesaj gerektirmeden veriyor, ama tek kişilik bir proje.
   - **TypeScript:** vtsls. typescript-language-server TS 7 projelerinde başlamıyor; plandan çıkar. TS 7 projelerinde projenin kendi `tsc --lsp` server'ı kullanılsın.
-- [ ] Language server'lar installer'a gömülecek mi, ilk kullanımda mı indirilecek? (lisans, installer boyutu, Node.js bağımlılığı)
-- [ ] Dart plugin'inin ve intellij-community'deki Python plugin'inin fork'a bundled eklenmesinin lisans ve build açısından doğrulanması
+- [x] Language server'lar installer'a gömülecek mi, ilk kullanımda mı indirilecek? (lisans, installer boyutu, Node.js bağımlılığı)
+  - Karar (15 Kasım 2026, Onur "ideal olan" dedi): İlk kullanımda, sabit sürümle ve SHA-256 kontrolüyle indirilir. Gerekçe: server'lar zaten dilin kendi aracını ister (`dotnet`, `go`, `node`, `php`); gömülü server bu bağımlılığı kaldırmaz. Gömmek installer'ı büyütür, server güncellemesini IDE sürümüne bağlar ve her server'ın lisansını installer'a taşır.
+  - Altyapı hazır: `ToolInstaller` (Faz 1). Henüz hiçbir dil modülü onu çağırmıyor.
+- [x] Dart plugin'inin ve intellij-community'deki Python plugin'inin fork'a bundled eklenmesinin lisans ve build açısından doğrulanması
+  - 15 Kasım 2026: Build tarafı Faz 6'da doğrulandı. Lisanslar `fork/bundled-plugins.tsv`'de: Dart ve Python Apache 2.0, LSP4IJ EPL 2.0, Flutter BSD 3. Üçü de değiştirmeden dağıtmaya izin veriyor; NOTICE ve lisans listesi Faz 7'de eklendi.
+  - Açık: Flutter plugin'indeki JxBrowser ticari lisanslı (Faz 7 notu). Hukuki kontrol yapılmadı.
 - [x] Fork'tan JetBrains Marketplace'e erişim açık kalacak mı? Kullanım koşulları kontrol edilmeli.
   - Cevap (9 Kasım 2026): Açık kalıyor. README, Marketplace kullanım koşullarına link veriyor. Koşulların hukuki kontrolü yapılmadı.
 - [x] Bir plugin `.zip`'ini fork'un installer build'ine bundled eklemenin doğru yolu; Faz 6 başında intellij-community build script'lerinden doğrulanacak.
