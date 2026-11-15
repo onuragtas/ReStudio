@@ -27,6 +27,7 @@ jvm_library(
         "@lib//:kotlin-stdlib",
         "//platform/core-api:core",
         "//platform/platform-impl:ide-impl",
+        "//platform/ide-core",
         "//platform/platform-util-io:ide-util-io",
     ],
 )
@@ -45,6 +46,7 @@ jvm_library(
         ":base",
         "//platform/core-api:core_test_lib",
         "//platform/platform-impl:ide-impl_test_lib",
+        "//platform/ide-core:ide-core_test_lib",
         "//platform/platform-util-io:ide-util-io_test_lib",
     ],
 )
