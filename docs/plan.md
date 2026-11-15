@@ -440,6 +440,11 @@ Toplam tahmin akşam/hafta sonu temposunda 7-9 ay. Faz 1-5 plugin reposunda, Faz
   - `fork/upstream-sync.sh` artık upstream ağacını alıp fork farkını `git apply --3way` ile uyguluyor. Sonuç: 0 çakışma; ağaç upstream'den sadece fork'un 50 dosyasında ayrılıyor. Fork modülleri derlendi.
   - Bulunan iki elle iş: `android/` klonu aynı tag'e alınmalı; `ReStudioPluginsTest` upstream'in `renderAdditionalJvmArguments` imza değişikliğine uyarlanmalıydı. Uyarlamadan sonra 10 ReStudio testi geçti. İkisi de `docs/upstream-sync.md`'de.
   - Açık: gerçek bir tag ile `merge` ve `finish` komutları uçtan uca çalıştırılmadı. Yeni tag gelince `fork-upstream-check` issue açar.
+  - Prova (15 Kasım 2026): `263` serisinde hâlâ yeni tag yok. Fork farkı JetBrains `master`'ına (7.360 yeni commit, sonraki seri) geçici bir branch'te uygulandı, sonra branch silindi.
+  - Bulgu: upstream `HeapDumpAnalysisSupport.kt`'yi yeni `platform/platform-impl/hprof/` modülüne taşımış. `git apply` taşımayı takip etmiyor; bu tek dosya yüzünden hiçbir değişiklik uygulanmadı ve script boş bir çakışma listesi gösterdi.
+  - Düzeltme: script, upstream'de olmayan fork dosyalarını apply'dan çıkarır ve elle taşınmak üzere listeler. `check_markers` bu dosyalar için toplam `ReStudio:` sayısına bakar.
+  - Prova sonucu: 2 çakışma (`IdeaApplicationInfo.xml` sürüm satırı, üretilen `BUILD.bazel`) ve 1 taşınmış dosya. Taşıma yapılmadan `check_markers` durdu (22 → 21), yapılınca geçti.
+  - Kontrol edilmedi: fork kodunun `master` ile derlenmesi. `master` bir sürüm değil ve `android/` klonu ona uymuyor.
 - [x] README: ne olduğu, JetBrains ile bağlantısı olmadığı, desteklenen diller, kurulum
   - `.github/README.md`. GitHub bu dosyayı kökteki README'den önce gösteriyor; böylece upstream README'si değişmiyor ve merge çakışması olmuyor.
 - [x] Fork'un kökündeki `AGENTS.md`'yi fork'a göre sadeleştir: silinen `.agents/skills/` dosyalarına referanslar kalmasın, fork kuralları (JetBrains koduna dokunma, sadece marka/paketleme) eklensin

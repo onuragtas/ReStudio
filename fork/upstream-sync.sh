@@ -85,11 +85,25 @@ cmd_check() {
 # a second time, and files that depend on each other no longer fit.
 # So the sync takes the upstream tree and applies the fork diff (base tag -> main) with a three-way apply.
 # The commit has two parents, main and the tag, so the history shows the merge.
+# Upstream can move or delete a file that the fork changed. `git apply` does not follow a move, and one such file
+# stops the whole apply. So the apply leaves out these files, and the script lists them for a manual port.
 apply_fork_onto() {
-  local upstream_ref="$1" base="$2"
+  local upstream_ref="$1" base="$2" file status=0
+  local excludes=()
+  gone_files=()
+  while IFS= read -r file; do
+    if ! git cat-file -e "$upstream_ref:$file" 2>/dev/null; then
+      gone_files+=("$file")
+      excludes+=("--exclude=$file")
+    fi
+  done < <(git diff --name-only --diff-filter=M "$base" "$MAIN")
+
   git merge --no-ff --no-commit -s ours "$upstream_ref" >/dev/null
   git read-tree --reset -u "$upstream_ref"
-  git diff --binary --full-index "$base" "$MAIN" | git apply --3way --index --whitespace=nowarn
+  git diff --binary --full-index "$base" "$MAIN" \
+    | git apply --3way --index --whitespace=nowarn ${excludes[@]+"${excludes[@]}"} || status=1
+  [[ ${#gone_files[@]} -eq 0 ]] || status=1
+  return $status
 }
 
 cmd_merge() {
@@ -119,6 +133,12 @@ cmd_merge() {
     echo
     echo "Conflicts in the files that the fork changed:"
     git diff --name-only --diff-filter=U | sed 's/^/  /'
+    if [[ ${#gone_files[@]} -gt 0 ]]; then
+      echo
+      echo "Upstream moved or deleted these files. Port the fork change to the new location by hand:"
+      printf '  %s\n' "${gone_files[@]}"
+      echo "  See the change: git diff $base $MAIN -- <file>"
+    fi
     echo
     echo "Resolve the conflicts, 'git add' the files, then run:"
     echo "  fork/upstream-sync.sh finish $tag"
@@ -130,11 +150,21 @@ cmd_merge() {
 
 # Stops when a file in the index has fewer "ReStudio:" markers than in main.
 # Each changed line in a JetBrains file has such a marker, so a lower count shows a lost fork change.
+# A file that upstream moved is not in the index. For such a file, the total count must not go down.
 check_markers() {
   local lost
-  lost="$(awk -F: 'NR == FNR { old[$1] = $2; next } { new[$1] = $2 }
-    END { for (f in old) if (new[f] + 0 < old[f]) print "  " f " (" old[f] " -> " new[f] + 0 ")" }' \
-    <(git grep -c 'ReStudio:' "$MAIN" -- | sed "s|^$MAIN:||") <(git grep --cached -c 'ReStudio:' --))"
+  lost="$(awk -F: 'FILENAME == ARGV[1] { old[$1] = $2; next }
+    FILENAME == ARGV[2] { new[$1] = $2; next }
+    { indexed[$0] = 1 }
+    END {
+      for (f in old) {
+        total_old += old[f]
+        if ((f in indexed) && new[f] + 0 < old[f]) print "  " f " (" old[f] " -> " new[f] + 0 ")"
+      }
+      for (f in new) total_new += new[f]
+      if (total_new < total_old) print "  all files (" total_old " -> " total_new "): the port of a moved file is missing"
+    }' \
+    <(git grep -c 'ReStudio:' "$MAIN" -- | sed "s|^$MAIN:||") <(git grep --cached -c 'ReStudio:' --) <(git ls-files))"
   [[ -z "$lost" ]] || die "the merge lost fork changes. Files with fewer 'ReStudio:' markers than in $MAIN:
 $lost"
 }

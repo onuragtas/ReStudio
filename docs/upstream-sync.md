@@ -29,6 +29,9 @@ Fork, JetBrains'in `master` branch'ini takip etmez. Yeni özellik ve düzeltmele
    fork/upstream-sync.sh finish idea/263.8000.10
    ```
    Vazgeçmek için: `fork/upstream-sync.sh abort`.
+   - **Taşınan veya silinen dosya:** Upstream, fork'un değiştirdiği bir dosyayı taşıyabilir. `git apply` taşımayı takip etmez. Script bu dosyaları apply'dan çıkarır ve ayrı listeler. Fork değişikliğini (`git diff <taban tag> main -- <dosya>`) yeni yere elle taşıyın ve tablodaki yolu güncelleyin. Örnek: `master`'da `HeapDumpAnalysisSupport.kt` `platform/platform-impl/hprof/` altına taşındı (prova, 15 Kasım 2026).
+   - **`IdeaApplicationInfo.xml`:** Sürüm satırı upstream'den, diğer satırlar fork'tan gelir.
+   - **Üretilen `BUILD.bazel`:** Elle çözmeyin. `./build/jpsModelToBazelCommunityOnly.cmd` ile `.iml` dosyalarından yeniden üretin.
 5. **API değişiklikleri:** Upstream, fork kodunun kullandığı bir API'yi değiştirebilir. Çakışma olmasa da derleme düşer. Deneme örneği: `renderAdditionalJvmArguments`, `vendorName` ve `pathsSelector`'ı `ProductJvmArguments`'tan alıp parametre yaptı; `ReStudioPluginsTest` güncellenmeliydi. Bu yüzden kontroller derlemeyi ve `ReStudio*` testlerini içerir.
 6. **Kontroller** (aşağıda) geçince branch'i push edin, `main`'e PR açın, merge edin, issue'yu kapatın.
 
@@ -36,7 +39,7 @@ Fork, JetBrains'in `master` branch'ini takip etmez. Yeni özellik ve düzeltmele
 
 Her sync PR'ı merge edilmeden önce:
 
-- [x] Otomatik: `fork/upstream-sync.sh finish`, bir dosyada `ReStudio:` işareti `main`dekinden azsa durur. Kaybolan bir fork satırı böylece merge commit'inden önce görünür.
+- [x] Otomatik: `fork/upstream-sync.sh finish`, bir dosyada `ReStudio:` işareti `main`dekinden azsa durur. Kaybolan bir fork satırı böylece merge commit'inden önce görünür. Taşınan dosyalar için toplam sayıya bakar; taşıma unutulursa da durur.
 - [ ] Fork modülleri ve testleri derleniyor: `./bazel.cmd build //build:i_build_target //idea/customization/base:base //platform/platform-impl:ide-impl //platform/core-impl:core-impl` ve `./tests.cmd --module intellij.idea.community.build.tests --test 'org.jetbrains.intellij.build.ReStudio*'`
 - [ ] CI (`fork-release.yml`, tag'siz) sync branch'inde geçiyor; smoke test bundled plugin'leri yüklüyor
 - [ ] IDE kaynaktan derleniyor ve açılıyor (`./installers.cmd -Dintellij.build.target.os=current` veya IDE'deki "IDEA" run configuration'ı)
