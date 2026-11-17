@@ -11,9 +11,9 @@ Dart	1212339	511.0.0	3c96609978476b489fb0b6704e0c9899a28eec594f09f1da16b2ada6822
 io.flutter	1212341	98.0.0	1d5f09a8b17ddf95bb89c6fa9835deb6f0dc89a5ac7d95c1b472c429bcecc65e	BSD-3-Clause	path
 PythonCore	1212274	263.7307.200	996f7d28f640692610150b84cb2f86f9304e91c584e3c6035e4f7337a90e3dda	Apache-2.0	bundled
 com.redhat.devtools.lsp4ij	1157565	0.21.0	2ed125cc36620545c226186587d36ca4a8fc7c3db85e1ee5dfe0946b973e6caa	EPL-2.0	path
-dev.restudio.core	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.5/core-0.2.5.zip	0.2.5	f46ec90e315e877faeb1af8a029b8774e897c9329e5696471df5d7578a589a9c	ReStudio-langs	path
-dev.restudio.go	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.5/go-0.2.5.zip	0.2.5	ef816c1802d5c18d04dab97598dc121b61e5f977f8a181a67ed7ecdb06a5a975	ReStudio-langs	path
-dev.restudio.dotnet	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.5/dotnet-0.2.5.zip	0.2.5	115fc569660cf7265f9bb7a0330adaeca0fdf956b0d954d45f4c6caecfb96b07	ReStudio-langs	path
-dev.restudio.web	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.5/web-0.2.5.zip	0.2.5	0f0fb67dad5caa002cbc253b001c879d3582fa2124bcba1911f02c20791bce04	ReStudio-langs	path
-dev.restudio.php	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.5/php-0.2.5.zip	0.2.5	ad18d58be509d67385b9230c9bd0e53879553e7c33e3f3238fcc8c938ee00331	ReStudio-langs	path
-dev.restudio.spring	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.5/spring-0.2.5.zip	0.2.5	ce228191604086e4b0fb7fb25cd12fce9f9f9dc3a64bc7c6b3b2e6bb35e76afb	ReStudio-langs	path
+dev.restudio.core	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.6/core-0.2.6.zip	0.2.6	dc5ae2a9208c1d28efcb748ed937b6b670047c6ab47ec11b6c048fd7a672c498	ReStudio-langs	path
+dev.restudio.go	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.6/go-0.2.6.zip	0.2.6	68c9af152c662f55e46eaef8cff27a515239c369d604aefd1f228e0f1ebc83e3	ReStudio-langs	path
+dev.restudio.dotnet	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.6/dotnet-0.2.6.zip	0.2.6	2b17695ecc12e7809e022d82260056108becf0ecc079601e8183e4c413ad69c6	ReStudio-langs	path
+dev.restudio.web	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.6/web-0.2.6.zip	0.2.6	8e2f74e56d510014ecae4ab01e394df823c7ab28eb12900fe96371102cea7c64	ReStudio-langs	path
+dev.restudio.php	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.6/php-0.2.6.zip	0.2.6	a704941568323bba23c98eb067f345caa75b432909276eaa5daf11621d6022da	ReStudio-langs	path
+dev.restudio.spring	https://github.com/onuragtas/ReStudio-langs/releases/download/v0.2.6/spring-0.2.6.zip	0.2.6	913144b4a43a38f2a454db9b3e9acdf081879cebdbd1936610f108445eb6253d	ReStudio-langs	path
